@@ -24,12 +24,13 @@ struct HTTPResponse {
     void enableCORS();
     
     // Factory methods for common responses
-    static HTTPResponse ok(const std::string& body);
-    static HTTPResponse created(const std::string& body);
+    static HTTPResponse ok(const std::string& body, const std::string& contentType = "application/json");
+    static HTTPResponse created(const std::string& body, const std::string& contentType = "application/json");
     static HTTPResponse noContent();
     static HTTPResponse badRequest(const std::string& message);
     static HTTPResponse unauthorized(const std::string& message = "Unauthorized");
     static HTTPResponse notFound(const std::string& message = "Not found");
+    static HTTPResponse notImplemented(const std::string& message = "Not implemented");
     static HTTPResponse internalError(const std::string& message = "Internal server error");
 };
 

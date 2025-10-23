@@ -1,14 +1,15 @@
 #include "../include/routes/ProjectRoutes.h"
+#include "../include/routes/RouteHelpers.h"
 #include "../include/serialization/JSONSerializer.h"
 #include "../include/serialization/JSONDeserializer.h"
 #include "../../include/UUID.h"
 #include <stdexcept>
 
-ProjectRoutes::ProjectRoutes(std::shared_ptr<Database> db) : database(db) {}
+ProjectRoutes::ProjectRoutes(std::shared_ptr<IDatabase> db) : database_(db) {}
 
 HTTPResponse ProjectRoutes::handleGetAll(const HTTPRequest& req) {
     try {
-        auto projects = database->loadAllProjects();
+        auto projects = database_->loadAllProjects();
         std::string json = JSONSerializer::serialize(projects);
         return HTTPResponse::ok(json, "application/json");
     } catch (const std::exception& e) {
@@ -18,8 +19,8 @@ HTTPResponse ProjectRoutes::handleGetAll(const HTTPRequest& req) {
 
 HTTPResponse ProjectRoutes::handleGetById(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto project = database->loadProject(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto project = database_->loadProject(id);
         
         if (!project) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Project not found"));
@@ -36,7 +37,7 @@ HTTPResponse ProjectRoutes::handleCreate(const HTTPRequest& req) {
     try {
         auto project = JSONDeserializer::deserializeProject(req.body);
         
-        if (!database->saveProject(project)) {
+        if (!database_->saveProject(project)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to save project"));
         }
         
@@ -49,8 +50,8 @@ HTTPResponse ProjectRoutes::handleCreate(const HTTPRequest& req) {
 
 HTTPResponse ProjectRoutes::handleUpdate(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto project = database->loadProject(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto project = database_->loadProject(id);
         
         if (!project) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Project not found"));
@@ -58,7 +59,7 @@ HTTPResponse ProjectRoutes::handleUpdate(const HTTPRequest& req) {
         
         JSONDeserializer::updateProject(project, req.body);
         
-        if (!database->saveProject(project)) {
+        if (!database_->saveProject(project)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to update project"));
         }
         
@@ -71,9 +72,9 @@ HTTPResponse ProjectRoutes::handleUpdate(const HTTPRequest& req) {
 
 HTTPResponse ProjectRoutes::handleDelete(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
+        UUID id = RouteHelpers::extractUUID(req.path);
         
-        if (!database->deleteProject(id)) {
+        if (!database_->deleteProject(id)) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Project not found"));
         }
         
@@ -83,28 +84,11 @@ HTTPResponse ProjectRoutes::handleDelete(const HTTPRequest& req) {
     }
 }
 
-HTTPResponse ProjectRoutes::handleGetContainers(const HTTPRequest& req) {
-    try {
-        UUID id = extractUUID(req.path);
-        auto project = database->loadProject(id);
-        
-        if (!project) {
-            return HTTPResponse::notFound(JSONSerializer::serializeError("Project not found"));
-        }
-        
-        std::string json = JSONSerializer::serialize(project->getContainers());
-        return HTTPResponse::ok(json, "application/json");
-    } catch (const std::exception& e) {
-        return HTTPResponse::internalError(JSONSerializer::serializeError(e.what()));
-    }
-}
-
-UUID ProjectRoutes::extractUUID(const std::string& path) {
+std::string ProjectRoutes::extractIdFromPath(const std::string& path) {
     size_t lastSlash = path.find_last_of('/');
     if (lastSlash == std::string::npos) {
         throw std::runtime_error("Invalid path format");
     }
     
-    std::string uuidStr = path.substr(lastSlash + 1);
-    return UUID::fromString(uuidStr);
+    return path.substr(lastSlash + 1);
 }

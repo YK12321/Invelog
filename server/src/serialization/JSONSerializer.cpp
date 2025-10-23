@@ -6,8 +6,19 @@
 #include "../../include/Category.h"
 #include "../../include/ActivityLog.h"
 #include <nlohmann/json.hpp>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
 using json = nlohmann::json;
+
+// Helper function to convert time_point to ISO 8601 string
+static std::string timePointToString(const std::chrono::system_clock::time_point& tp) {
+    auto time_t = std::chrono::system_clock::to_time_t(tp);
+    std::stringstream ss;
+    ss << std::put_time(std::gmtime(&time_t), "%Y-%m-%dT%H:%M:%SZ");
+    return ss.str();
+}
 
 // Single entity serialization
 
@@ -64,8 +75,8 @@ std::string JSONSerializer::serialize(std::shared_ptr<Container> container) {
         j["parent_container_id"] = nullptr;
     }
     
-    j["item_count"] = container->getItems().size();
-    j["subcontainer_count"] = container->getSubContainers().size();
+    j["item_count"] = container->getAllItems().size();
+    j["subcontainer_count"] = container->getAllSubcontainers().size();
     
     return j.dump();
 }
@@ -79,7 +90,7 @@ std::string JSONSerializer::serialize(std::shared_ptr<Location> location) {
     j["id"] = location->getId().toString();
     j["name"] = location->getName();
     j["address"] = location->getAddress();
-    j["container_count"] = location->getContainers().size();
+    j["container_count"] = location->getAllContainers().size();
     
     return j.dump();
 }
@@ -94,11 +105,11 @@ std::string JSONSerializer::serialize(std::shared_ptr<Project> project) {
     j["name"] = project->getName();
     j["description"] = project->getDescription();
     j["status"] = static_cast<int>(project->getStatus());
-    j["created_date"] = project->getCreatedDate();
-    j["start_date"] = project->getStartDate();
-    j["end_date"] = project->getEndDate();
-    j["container_count"] = project->getContainers().size();
-    j["allocated_items"] = project->getAllocatedItemCount();
+    j["created_date"] = timePointToString(project->getCreatedDate());
+    j["start_date"] = timePointToString(project->getStartDate());
+    j["end_date"] = timePointToString(project->getEndDate());
+    j["container_count"] = project->getAllContainers().size();
+    j["allocated_items"] = project->getTotalItemCount();
     
     return j.dump();
 }
@@ -127,7 +138,7 @@ std::string JSONSerializer::serialize(std::shared_ptr<ActivityLog> log) {
     j["type"] = log->getTypeString();
     j["description"] = log->getDescription();
     j["user_id"] = log->getUserId();
-    j["timestamp"] = log->getTimestamp();
+    j["timestamp"] = timePointToString(log->getTimestamp());
     j["quantity_change"] = log->getQuantityChange();
     
     if (log->getItem()) {

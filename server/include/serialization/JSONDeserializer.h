@@ -27,6 +27,13 @@ public:
     static std::shared_ptr<Category> deserializeCategory(const std::string& json);
     static std::shared_ptr<ActivityLog> deserializeActivityLog(const std::string& json);
     
+    // Update existing entities from JSON
+    static void updateItem(std::shared_ptr<Item> item, const std::string& json);
+    static void updateContainer(std::shared_ptr<Container> container, const std::string& json);
+    static void updateLocation(std::shared_ptr<Location> location, const std::string& json);
+    static void updateProject(std::shared_ptr<Project> project, const std::string& json);
+    static void updateCategory(std::shared_ptr<Category> category, const std::string& json);
+    
     // Validation
     static bool isValidJSON(const std::string& json);
 };

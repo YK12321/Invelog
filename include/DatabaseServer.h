@@ -1,3 +1,4 @@
+//This file is deprecated. Use server/include/DatabaseAPIServer.h instead.
 #ifndef DATABASE_SERVER_H
 #define DATABASE_SERVER_H
 

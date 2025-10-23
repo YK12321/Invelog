@@ -277,7 +277,7 @@ auto item = manager.createItem("Resistor", category, 100);
 
 ### Windows
 ```powershell
-cd "C:\Users\thewi\STEM\Inventory Management\Invelog"
+cd "path\to\Invelog"
 mkdir build
 cd build
 cmake ..

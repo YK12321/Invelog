@@ -1,14 +1,15 @@
 #include "../include/routes/ContainerRoutes.h"
+#include "../include/routes/RouteHelpers.h"
 #include "../include/serialization/JSONSerializer.h"
 #include "../include/serialization/JSONDeserializer.h"
 #include "../../include/UUID.h"
 #include <stdexcept>
 
-ContainerRoutes::ContainerRoutes(std::shared_ptr<Database> db) : database(db) {}
+ContainerRoutes::ContainerRoutes(std::shared_ptr<IDatabase> db) : database_(db) {}
 
 HTTPResponse ContainerRoutes::handleGetAll(const HTTPRequest& req) {
     try {
-        auto containers = database->loadAllContainers();
+        auto containers = database_->loadAllContainers();
         std::string json = JSONSerializer::serialize(containers);
         return HTTPResponse::ok(json, "application/json");
     } catch (const std::exception& e) {
@@ -18,8 +19,8 @@ HTTPResponse ContainerRoutes::handleGetAll(const HTTPRequest& req) {
 
 HTTPResponse ContainerRoutes::handleGetById(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto container = database->loadContainer(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto container = database_->loadContainer(id);
         
         if (!container) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Container not found"));
@@ -36,7 +37,7 @@ HTTPResponse ContainerRoutes::handleCreate(const HTTPRequest& req) {
     try {
         auto container = JSONDeserializer::deserializeContainer(req.body);
         
-        if (!database->saveContainer(container)) {
+        if (!database_->saveContainer(container)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to save container"));
         }
         
@@ -49,8 +50,8 @@ HTTPResponse ContainerRoutes::handleCreate(const HTTPRequest& req) {
 
 HTTPResponse ContainerRoutes::handleUpdate(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto container = database->loadContainer(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto container = database_->loadContainer(id);
         
         if (!container) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Container not found"));
@@ -58,7 +59,7 @@ HTTPResponse ContainerRoutes::handleUpdate(const HTTPRequest& req) {
         
         JSONDeserializer::updateContainer(container, req.body);
         
-        if (!database->saveContainer(container)) {
+        if (!database_->saveContainer(container)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to update container"));
         }
         
@@ -71,9 +72,9 @@ HTTPResponse ContainerRoutes::handleUpdate(const HTTPRequest& req) {
 
 HTTPResponse ContainerRoutes::handleDelete(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
+        UUID id = RouteHelpers::extractUUID(req.path);
         
-        if (!database->deleteContainer(id)) {
+        if (!database_->deleteContainer(id)) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Container not found"));
         }
         
@@ -83,44 +84,11 @@ HTTPResponse ContainerRoutes::handleDelete(const HTTPRequest& req) {
     }
 }
 
-HTTPResponse ContainerRoutes::handleGetItems(const HTTPRequest& req) {
-    try {
-        UUID id = extractUUID(req.path);
-        auto container = database->loadContainer(id);
-        
-        if (!container) {
-            return HTTPResponse::notFound(JSONSerializer::serializeError("Container not found"));
-        }
-        
-        std::string json = JSONSerializer::serialize(container->getItems());
-        return HTTPResponse::ok(json, "application/json");
-    } catch (const std::exception& e) {
-        return HTTPResponse::internalError(JSONSerializer::serializeError(e.what()));
-    }
-}
-
-HTTPResponse ContainerRoutes::handleGetSubContainers(const HTTPRequest& req) {
-    try {
-        UUID id = extractUUID(req.path);
-        auto container = database->loadContainer(id);
-        
-        if (!container) {
-            return HTTPResponse::notFound(JSONSerializer::serializeError("Container not found"));
-        }
-        
-        std::string json = JSONSerializer::serialize(container->getSubContainers());
-        return HTTPResponse::ok(json, "application/json");
-    } catch (const std::exception& e) {
-        return HTTPResponse::internalError(JSONSerializer::serializeError(e.what()));
-    }
-}
-
-UUID ContainerRoutes::extractUUID(const std::string& path) {
+std::string ContainerRoutes::extractIdFromPath(const std::string& path) {
     size_t lastSlash = path.find_last_of('/');
     if (lastSlash == std::string::npos) {
         throw std::runtime_error("Invalid path format");
     }
     
-    std::string uuidStr = path.substr(lastSlash + 1);
-    return UUID::fromString(uuidStr);
+    return path.substr(lastSlash + 1);
 }

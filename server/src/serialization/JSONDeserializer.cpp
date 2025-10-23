@@ -7,8 +7,26 @@
 #include "../../include/ActivityLog.h"
 #include <nlohmann/json.hpp>
 #include <stdexcept>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
 using json = nlohmann::json;
+
+// Helper function to parse ISO 8601 string to time_point
+static std::chrono::system_clock::time_point stringToTimePoint(const std::string& str) {
+    std::tm tm = {};
+    std::stringstream ss(str);
+    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
+    if (ss.fail()) {
+        // Try alternative format
+        ss.clear();
+        ss.str(str);
+        ss >> std::get_time(&tm, "%Y-%m-%d");
+    }
+    auto time_t = std::mktime(&tm);
+    return std::chrono::system_clock::from_time_t(time_t);
+}
 
 std::shared_ptr<Item> JSONDeserializer::deserializeItem(const std::string& jsonStr) {
     try {
@@ -22,7 +40,15 @@ std::shared_ptr<Item> JSONDeserializer::deserializeItem(const std::string& jsonS
             throw std::runtime_error("Item name is required");
         }
         
-        auto item = std::make_shared<Item>(name, description, quantity);
+        // Check if ID is provided (for updates/creates with specific IDs)
+        std::shared_ptr<Item> item;
+        if (j.contains("id")) {
+            UUID id = UUID::fromString(j["id"].get<std::string>());
+            item = std::make_shared<Item>(id, name, nullptr, quantity, description);
+        } else {
+            // Create item with auto-generated ID
+            item = std::make_shared<Item>(name, nullptr, quantity, description);
+        }
         
         // Note: Category and Container relationships are set via separate endpoints
         // as they require looking up existing entities in the database
@@ -47,8 +73,8 @@ std::shared_ptr<Container> JSONDeserializer::deserializeContainer(const std::str
         
         auto container = std::make_shared<Container>(
             name,
-            description,
-            static_cast<ContainerType>(type)
+            static_cast<ContainerType>(type),
+            description
         );
         
         // Note: Location and parent container relationships are set via separate endpoints
@@ -94,16 +120,19 @@ std::shared_ptr<Project> JSONDeserializer::deserializeProject(const std::string&
         
         auto project = std::make_shared<Project>(
             name,
-            description,
-            static_cast<ProjectStatus>(status)
+            description
         );
         
+        if (status >= 0 && status <= 4) {
+            project->setStatus(static_cast<ProjectStatus>(status));
+        }
+        
         if (!startDate.empty()) {
-            project->setStartDate(startDate);
+            project->setStartDate(stringToTimePoint(startDate));
         }
         
         if (!endDate.empty()) {
-            project->setEndDate(endDate);
+            project->setEndDate(stringToTimePoint(endDate));
         }
         
         return project;
@@ -166,10 +195,7 @@ void JSONDeserializer::updateContainer(std::shared_ptr<Container> container, con
             container->setDescription(j["description"]);
         }
         
-        if (j.contains("type")) {
-            container->setType(static_cast<ContainerType>(j["type"].get<int>()));
-        }
-        
+        // Note: Type is set at construction time and typically shouldn't be changed
         // Note: Location and parent container updates should be done via separate endpoints
         
     } catch (const json::exception& e) {
@@ -211,11 +237,11 @@ void JSONDeserializer::updateProject(std::shared_ptr<Project> project, const std
         }
         
         if (j.contains("start_date")) {
-            project->setStartDate(j["start_date"]);
+            project->setStartDate(stringToTimePoint(j["start_date"].get<std::string>()));
         }
         
         if (j.contains("end_date")) {
-            project->setEndDate(j["end_date"]);
+            project->setEndDate(stringToTimePoint(j["end_date"].get<std::string>()));
         }
         
     } catch (const json::exception& e) {

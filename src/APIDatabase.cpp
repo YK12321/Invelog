@@ -5,14 +5,27 @@
 #include "Project.h"
 #include "Category.h"
 #include "ActivityLog.h"
+
+// Define WIN32_LEAN_AND_MEAN before including httplib to avoid UUID conflict
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#endif
+
+#include <httplib.h>
+#include <nlohmann/json.hpp>
 #include <iostream>
 #include <sstream>
 #include <thread>
 #include <chrono>
 
-// Placeholder for actual HTTP client
-// In production, use libcurl, cpp-httplib, or similar
+// Real HTTP client using cpp-httplib
 class HTTPClient {
+private:
+    std::unique_ptr<httplib::Client> client_;
+    std::string host_;
+    int port_;
+    
 public:
     struct Response {
         int statusCode;
@@ -20,33 +33,181 @@ public:
         std::map<std::string, std::string> headers;
     };
     
+    HTTPClient(const std::string& baseUrl) {
+        // Parse URL to extract host and port
+        // Format: http://localhost:8080/api or http://localhost:8080
+        size_t protocolEnd = baseUrl.find("://");
+        if (protocolEnd == std::string::npos) {
+            host_ = "localhost";
+            port_ = 8080;
+        } else {
+            std::string rest = baseUrl.substr(protocolEnd + 3);
+            size_t portStart = rest.find(':');
+            size_t pathStart = rest.find('/');
+            
+            if (portStart != std::string::npos) {
+                host_ = rest.substr(0, portStart);
+                if (pathStart != std::string::npos) {
+                    port_ = std::stoi(rest.substr(portStart + 1, pathStart - portStart - 1));
+                } else {
+                    port_ = std::stoi(rest.substr(portStart + 1));
+                }
+            } else {
+                if (pathStart != std::string::npos) {
+                    host_ = rest.substr(0, pathStart);
+                } else {
+                    host_ = rest;
+                }
+                port_ = 80;
+            }
+        }
+        
+        client_ = std::make_unique<httplib::Client>(host_, port_);
+        client_->set_read_timeout(10, 0);  // 10 seconds
+        client_->set_write_timeout(10, 0);
+    }
+    
     Response get(const std::string& url, const std::map<std::string, std::string>& headers) {
+        // Extract path from full URL (httplib::Client only wants the path part)
+        // URL format: http://localhost:8080/api/health
+        // We need: /api/health
+        std::string path = url;
+        size_t protocolEnd = url.find("://");
+        if (protocolEnd != std::string::npos) {
+            size_t pathStart = url.find('/', protocolEnd + 3);
+            if (pathStart != std::string::npos) {
+                path = url.substr(pathStart);
+            } else {
+                path = "/";
+            }
+        }
+        
         std::cout << "HTTP GET: " << url << std::endl;
-        return {200, "{\"success\": true}", {}};
+        
+        httplib::Headers httpHeaders;
+        for (const auto& [key, value] : headers) {
+            httpHeaders.emplace(key, value);
+        }
+        
+        auto res = client_->Get(path.c_str(), httpHeaders);
+        if (res) {
+            Response response;
+            response.statusCode = res->status;
+            response.body = res->body;
+            for (const auto& [key, value] : res->headers) {
+                response.headers[key] = value;
+            }
+            return response;
+        }
+        return {0, "", {}};
     }
     
     Response post(const std::string& url, const std::string& data, 
                  const std::map<std::string, std::string>& headers) {
+        // Extract path from full URL
+        std::string path = url;
+        size_t protocolEnd = url.find("://");
+        if (protocolEnd != std::string::npos) {
+            size_t pathStart = url.find('/', protocolEnd + 3);
+            if (pathStart != std::string::npos) {
+                path = url.substr(pathStart);
+            } else {
+                path = "/";
+            }
+        }
+        
         std::cout << "HTTP POST: " << url << std::endl;
-        return {201, "{\"success\": true}", {}};
+        
+        httplib::Headers httpHeaders;
+        for (const auto& [key, value] : headers) {
+            httpHeaders.emplace(key, value);
+        }
+        
+        auto res = client_->Post(path.c_str(), httpHeaders, data, "application/json");
+        if (res) {
+            Response response;
+            response.statusCode = res->status;
+            response.body = res->body;
+            for (const auto& [key, value] : res->headers) {
+                response.headers[key] = value;
+            }
+            return response;
+        }
+        return {0, "", {}};
     }
     
     Response put(const std::string& url, const std::string& data,
                 const std::map<std::string, std::string>& headers) {
+        // Extract path from full URL
+        std::string path = url;
+        size_t protocolEnd = url.find("://");
+        if (protocolEnd != std::string::npos) {
+            size_t pathStart = url.find('/', protocolEnd + 3);
+            if (pathStart != std::string::npos) {
+                path = url.substr(pathStart);
+            } else {
+                path = "/";
+            }
+        }
+        
         std::cout << "HTTP PUT: " << url << std::endl;
-        return {200, "{\"success\": true}", {}};
+        
+        httplib::Headers httpHeaders;
+        for (const auto& [key, value] : headers) {
+            httpHeaders.emplace(key, value);
+        }
+        
+        auto res = client_->Put(path.c_str(), httpHeaders, data, "application/json");
+        if (res) {
+            Response response;
+            response.statusCode = res->status;
+            response.body = res->body;
+            for (const auto& [key, value] : res->headers) {
+                response.headers[key] = value;
+            }
+            return response;
+        }
+        return {0, "", {}};
     }
     
     Response del(const std::string& url, const std::map<std::string, std::string>& headers) {
+        // Extract path from full URL
+        std::string path = url;
+        size_t protocolEnd = url.find("://");
+        if (protocolEnd != std::string::npos) {
+            size_t pathStart = url.find('/', protocolEnd + 3);
+            if (pathStart != std::string::npos) {
+                path = url.substr(pathStart);
+            } else {
+                path = "/";
+            }
+        }
+        
         std::cout << "HTTP DELETE: " << url << std::endl;
-        return {204, "", {}};
+        
+        httplib::Headers httpHeaders;
+        for (const auto& [key, value] : headers) {
+            httpHeaders.emplace(key, value);
+        }
+        
+        auto res = client_->Delete(path.c_str(), httpHeaders);
+        if (res) {
+            Response response;
+            response.statusCode = res->status;
+            response.body = res->body;
+            for (const auto& [key, value] : res->headers) {
+                response.headers[key] = value;
+            }
+            return response;
+        }
+        return {0, "", {}};
     }
 };
 
 APIDatabase::APIDatabase(const APIConfig& config)
     : config_(config), httpClient_(nullptr), connected_(false),
       lastRequestTime_(std::chrono::steady_clock::now()), requestCount_(0) {
-    httpClient_ = new HTTPClient();
+    httpClient_ = new HTTPClient(config.baseUrl);
 }
 
 APIDatabase::~APIDatabase() {
@@ -117,7 +278,7 @@ std::string APIDatabase::getAPIVersion() {
         std::string response = httpGet("/version");
         // In production, parse JSON response
         return "1.0.0"; // Placeholder
-    } catch (const std::exception& e) {
+    } catch (const std::exception&) {
         return "unknown";
     }
 }
@@ -396,12 +557,24 @@ bool APIDatabase::saveItem(std::shared_ptr<Item> item) {
     if (!isConnected() || !item) return false;
     
     std::string json = serializeItem(item);
-    std::string endpoint = config_.itemsEndpoint + "/" + item->getId().toString();
     
-    return retryRequest([this, &endpoint, &json]() {
-        std::string response = httpPut(endpoint, json);
-        return !response.empty();
-    });
+    // Check if item exists by trying to load it
+    std::string checkEndpoint = config_.itemsEndpoint + "/" + item->getId().toString();
+    std::string existingItem = httpGet(checkEndpoint);
+    
+    if (existingItem.empty()) {
+        // Item doesn't exist, use POST to create it
+        return retryRequest([this, &json]() {
+            std::string response = httpPost(config_.itemsEndpoint, json);
+            return !response.empty();
+        });
+    } else {
+        // Item exists, use PUT to update it
+        return retryRequest([this, &checkEndpoint, &json]() {
+            std::string response = httpPut(checkEndpoint, json);
+            return !response.empty();
+        });
+    }
 }
 
 std::shared_ptr<Item> APIDatabase::loadItem(const UUID& id) {
@@ -437,12 +610,24 @@ bool APIDatabase::saveContainer(std::shared_ptr<Container> container) {
     if (!isConnected() || !container) return false;
     
     std::string json = serializeContainer(container);
-    std::string endpoint = config_.containersEndpoint + "/" + container->getId().toString();
     
-    return retryRequest([this, &endpoint, &json]() {
-        std::string response = httpPut(endpoint, json);
-        return !response.empty();
-    });
+    // Check if container exists
+    std::string checkEndpoint = config_.containersEndpoint + "/" + container->getId().toString();
+    std::string existing = httpGet(checkEndpoint);
+    
+    if (existing.empty()) {
+        // Container doesn't exist, use POST to create it
+        return retryRequest([this, &json]() {
+            std::string response = httpPost(config_.containersEndpoint, json);
+            return !response.empty();
+        });
+    } else {
+        // Container exists, use PUT to update it
+        return retryRequest([this, &checkEndpoint, &json]() {
+            std::string response = httpPut(checkEndpoint, json);
+            return !response.empty();
+        });
+    }
 }
 
 std::shared_ptr<Container> APIDatabase::loadContainer(const UUID& id) {
@@ -526,8 +711,20 @@ std::vector<std::shared_ptr<Project>> APIDatabase::loadAllProjects() {
 bool APIDatabase::saveCategory(std::shared_ptr<Category> category) {
     if (!isConnected() || !category) return false;
     std::string json = serializeCategory(category);
-    std::string response = httpPut(config_.categoriesEndpoint + "/" + category->getId().toString(), json);
-    return !response.empty();
+    
+    // Check if category exists
+    std::string checkEndpoint = config_.categoriesEndpoint + "/" + category->getId().toString();
+    std::string existing = httpGet(checkEndpoint);
+    
+    if (existing.empty()) {
+        // Category doesn't exist, use POST to create it
+        std::string response = httpPost(config_.categoriesEndpoint, json);
+        return !response.empty();
+    } else {
+        // Category exists, use PUT to update it
+        std::string response = httpPut(checkEndpoint, json);
+        return !response.empty();
+    }
 }
 
 std::shared_ptr<Category> APIDatabase::loadCategory(const UUID& id) {
@@ -599,28 +796,89 @@ bool APIDatabase::deleteBatch(const std::vector<UUID>& ids, const std::string& e
     return httpDelete(endpoint);
 }
 
-// Deserialization placeholders (implement with JSON library in production)
-std::shared_ptr<Item> APIDatabase::deserializeItem(const std::string& json) {
-    std::cerr << "Item deserialization not implemented (requires JSON library)" << std::endl;
-    return nullptr;
+// Deserialization using nlohmann/json
+std::shared_ptr<Item> APIDatabase::deserializeItem(const std::string& jsonStr) {
+    try {
+        nlohmann::json j = nlohmann::json::parse(jsonStr);
+        
+        UUID id = UUID::fromString(j.value("id", ""));
+        std::string name = j.value("name", "");
+        std::string description = j.value("description", "");
+        int quantity = j.value("quantity", 0);
+        
+        auto item = std::make_shared<Item>(id, name, nullptr, quantity, description);
+        
+        // TODO: Deserialize category and container relationships
+        
+        return item;
+    } catch (const std::exception& e) {
+        std::cerr << "Item deserialization failed: " << e.what() << std::endl;
+        return nullptr;
+    }
 }
 
-std::shared_ptr<Container> APIDatabase::deserializeContainer(const std::string& json) {
-    return nullptr;
+std::shared_ptr<Container> APIDatabase::deserializeContainer(const std::string& jsonStr) {
+    try {
+        nlohmann::json j = nlohmann::json::parse(jsonStr);
+        
+        std::string name = j.value("name", "");
+        std::string description = j.value("description", "");
+        int type = j.value("type", 0);
+        
+        auto container = std::make_shared<Container>(name, static_cast<ContainerType>(type), description);
+        
+        return container;
+    } catch (const std::exception&) {
+        return nullptr;
+    }
 }
 
-std::shared_ptr<Location> APIDatabase::deserializeLocation(const std::string& json) {
-    return nullptr;
+std::shared_ptr<Location> APIDatabase::deserializeLocation(const std::string& jsonStr) {
+    try {
+        nlohmann::json j = nlohmann::json::parse(jsonStr);
+        
+        std::string name = j.value("name", "");
+        std::string description = j.value("description", "");
+        
+        auto location = std::make_shared<Location>(name, description);
+        
+        return location;
+    } catch (const std::exception&) {
+        return nullptr;
+    }
 }
 
-std::shared_ptr<Project> APIDatabase::deserializeProject(const std::string& json) {
-    return nullptr;
+std::shared_ptr<Project> APIDatabase::deserializeProject(const std::string& jsonStr) {
+    try {
+        nlohmann::json j = nlohmann::json::parse(jsonStr);
+        
+        std::string name = j.value("name", "");
+        std::string description = j.value("description", "");
+        
+        auto project = std::make_shared<Project>(name, description);
+        
+        return project;
+    } catch (const std::exception&) {
+        return nullptr;
+    }
 }
 
-std::shared_ptr<Category> APIDatabase::deserializeCategory(const std::string& json) {
-    return nullptr;
+std::shared_ptr<Category> APIDatabase::deserializeCategory(const std::string& jsonStr) {
+    try {
+        nlohmann::json j = nlohmann::json::parse(jsonStr);
+        
+        std::string name = j.value("name", "");
+        std::string description = j.value("description", "");
+        
+        auto category = std::make_shared<Category>(name, description);
+        
+        return category;
+    } catch (const std::exception&) {
+        return nullptr;
+    }
 }
 
-std::shared_ptr<ActivityLog> APIDatabase::deserializeActivityLog(const std::string& json) {
+std::shared_ptr<ActivityLog> APIDatabase::deserializeActivityLog(const std::string& /*json*/) {
+    // ActivityLog deserialization more complex - TODO for later
     return nullptr;
 }

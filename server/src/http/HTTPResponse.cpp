@@ -25,12 +25,16 @@ void HTTPResponse::enableCORS() {
     headers["Access-Control-Allow-Headers"] = "Content-Type, X-API-Key, Authorization";
 }
 
-HTTPResponse HTTPResponse::ok(const std::string& body) {
-    return HTTPResponse(200, body);
+HTTPResponse HTTPResponse::ok(const std::string& body, const std::string& contentType) {
+    HTTPResponse response(200, body);
+    response.setContentType(contentType);
+    return response;
 }
 
-HTTPResponse HTTPResponse::created(const std::string& body) {
-    return HTTPResponse(201, body);
+HTTPResponse HTTPResponse::created(const std::string& body, const std::string& contentType) {
+    HTTPResponse response(201, body);
+    response.setContentType(contentType);
+    return response;
 }
 
 HTTPResponse HTTPResponse::noContent() {
@@ -47,6 +51,10 @@ HTTPResponse HTTPResponse::unauthorized(const std::string& message) {
 
 HTTPResponse HTTPResponse::notFound(const std::string& message) {
     return HTTPResponse(404, "{\"error\":\"" + message + "\"}");
+}
+
+HTTPResponse HTTPResponse::notImplemented(const std::string& message) {
+    return HTTPResponse(501, "{\"error\":\"" + message + "\"}");
 }
 
 HTTPResponse HTTPResponse::internalError(const std::string& message) {

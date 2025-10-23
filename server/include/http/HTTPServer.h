@@ -38,7 +38,7 @@ public:
 private:
     int port_;
     bool running_;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::thread serverThread_;
     
     // Route table: method -> path -> handler

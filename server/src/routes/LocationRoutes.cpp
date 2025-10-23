@@ -1,14 +1,15 @@
 #include "../include/routes/LocationRoutes.h"
+#include "../include/routes/RouteHelpers.h"
 #include "../include/serialization/JSONSerializer.h"
 #include "../include/serialization/JSONDeserializer.h"
 #include "../../include/UUID.h"
 #include <stdexcept>
 
-LocationRoutes::LocationRoutes(std::shared_ptr<Database> db) : database(db) {}
+LocationRoutes::LocationRoutes(std::shared_ptr<IDatabase> db) : database_(db) {}
 
 HTTPResponse LocationRoutes::handleGetAll(const HTTPRequest& req) {
     try {
-        auto locations = database->loadAllLocations();
+        auto locations = database_->loadAllLocations();
         std::string json = JSONSerializer::serialize(locations);
         return HTTPResponse::ok(json, "application/json");
     } catch (const std::exception& e) {
@@ -18,8 +19,8 @@ HTTPResponse LocationRoutes::handleGetAll(const HTTPRequest& req) {
 
 HTTPResponse LocationRoutes::handleGetById(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto location = database->loadLocation(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto location = database_->loadLocation(id);
         
         if (!location) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Location not found"));
@@ -36,7 +37,7 @@ HTTPResponse LocationRoutes::handleCreate(const HTTPRequest& req) {
     try {
         auto location = JSONDeserializer::deserializeLocation(req.body);
         
-        if (!database->saveLocation(location)) {
+        if (!database_->saveLocation(location)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to save location"));
         }
         
@@ -49,8 +50,8 @@ HTTPResponse LocationRoutes::handleCreate(const HTTPRequest& req) {
 
 HTTPResponse LocationRoutes::handleUpdate(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto location = database->loadLocation(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto location = database_->loadLocation(id);
         
         if (!location) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Location not found"));
@@ -58,7 +59,7 @@ HTTPResponse LocationRoutes::handleUpdate(const HTTPRequest& req) {
         
         JSONDeserializer::updateLocation(location, req.body);
         
-        if (!database->saveLocation(location)) {
+        if (!database_->saveLocation(location)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to update location"));
         }
         
@@ -71,9 +72,9 @@ HTTPResponse LocationRoutes::handleUpdate(const HTTPRequest& req) {
 
 HTTPResponse LocationRoutes::handleDelete(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
+        UUID id = RouteHelpers::extractUUID(req.path);
         
-        if (!database->deleteLocation(id)) {
+        if (!database_->deleteLocation(id)) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Location not found"));
         }
         
@@ -83,28 +84,11 @@ HTTPResponse LocationRoutes::handleDelete(const HTTPRequest& req) {
     }
 }
 
-HTTPResponse LocationRoutes::handleGetContainers(const HTTPRequest& req) {
-    try {
-        UUID id = extractUUID(req.path);
-        auto location = database->loadLocation(id);
-        
-        if (!location) {
-            return HTTPResponse::notFound(JSONSerializer::serializeError("Location not found"));
-        }
-        
-        std::string json = JSONSerializer::serialize(location->getContainers());
-        return HTTPResponse::ok(json, "application/json");
-    } catch (const std::exception& e) {
-        return HTTPResponse::internalError(JSONSerializer::serializeError(e.what()));
-    }
-}
-
-UUID LocationRoutes::extractUUID(const std::string& path) {
+std::string LocationRoutes::extractIdFromPath(const std::string& path) {
     size_t lastSlash = path.find_last_of('/');
     if (lastSlash == std::string::npos) {
         throw std::runtime_error("Invalid path format");
     }
     
-    std::string uuidStr = path.substr(lastSlash + 1);
-    return UUID::fromString(uuidStr);
+    return path.substr(lastSlash + 1);
 }

@@ -23,6 +23,10 @@ UUID UUID::generate() {
     return UUID();
 }
 
+UUID UUID::fromString(const std::string& uuid) {
+    return UUID(uuid);
+}
+
 std::string UUID::generateUUIDv4() {
     static std::random_device rd;
     static std::mt19937_64 gen(rd());

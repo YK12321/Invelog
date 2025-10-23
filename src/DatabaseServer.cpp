@@ -1,3 +1,4 @@
+//This file is deprecated. Use server/include/DatabaseAPIServer.cpp instead.
 #include "DatabaseServer.h"
 #include "Item.h"
 #include "Container.h"
@@ -240,7 +241,7 @@ HTTPResponse DatabaseServer::handleGetItems(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleGetItem(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/items/");
-    auto item = database_->loadItem(id);
+    auto item = database_->loadItem(UUID::fromString(id));
     
     if (!item) {
         return errorResponse(404, "Item not found");
@@ -265,7 +266,7 @@ HTTPResponse DatabaseServer::handleCreateItem(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleUpdateItem(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/items/");
-    auto existingItem = database_->loadItem(id);
+    auto existingItem = database_->loadItem(UUID::fromString(id));
     
     if (!existingItem) {
         return errorResponse(404, "Item not found");
@@ -277,7 +278,7 @@ HTTPResponse DatabaseServer::handleUpdateItem(const HTTPRequest& request) {
     }
     
     // Ensure ID matches
-    if (updatedItem->getId() != id) {
+    if (updatedItem->getId() != UUID::fromString(id)) {
         return errorResponse(400, "Item ID mismatch");
     }
     
@@ -291,7 +292,7 @@ HTTPResponse DatabaseServer::handleUpdateItem(const HTTPRequest& request) {
 HTTPResponse DatabaseServer::handleDeleteItem(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/items/");
     
-    if (!database_->deleteItem(id)) {
+    if (!database_->deleteItem(UUID::fromString(id))) {
         return errorResponse(404, "Item not found or failed to delete");
     }
     
@@ -306,7 +307,7 @@ HTTPResponse DatabaseServer::handleGetContainers(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleGetContainer(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/containers/");
-    auto container = database_->loadContainer(id);
+    auto container = database_->loadContainer(UUID::fromString(id));
     
     if (!container) {
         return errorResponse(404, "Container not found");
@@ -331,7 +332,7 @@ HTTPResponse DatabaseServer::handleCreateContainer(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleUpdateContainer(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/containers/");
-    auto existingContainer = database_->loadContainer(id);
+    auto existingContainer = database_->loadContainer(UUID::fromString(id));
     
     if (!existingContainer) {
         return errorResponse(404, "Container not found");
@@ -342,7 +343,7 @@ HTTPResponse DatabaseServer::handleUpdateContainer(const HTTPRequest& request) {
         return errorResponse(400, "Invalid container data");
     }
     
-    if (updatedContainer->getId() != id) {
+    if (updatedContainer->getId() != UUID::fromString(id)) {
         return errorResponse(400, "Container ID mismatch");
     }
     
@@ -356,7 +357,7 @@ HTTPResponse DatabaseServer::handleUpdateContainer(const HTTPRequest& request) {
 HTTPResponse DatabaseServer::handleDeleteContainer(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/containers/");
     
-    if (!database_->deleteContainer(id)) {
+    if (!database_->deleteContainer(UUID::fromString(id))) {
         return errorResponse(404, "Container not found or failed to delete");
     }
     
@@ -371,7 +372,7 @@ HTTPResponse DatabaseServer::handleGetLocations(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleGetLocation(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/locations/");
-    auto location = database_->loadLocation(id);
+    auto location = database_->loadLocation(UUID::fromString(id));
     
     if (!location) {
         return errorResponse(404, "Location not found");
@@ -396,7 +397,7 @@ HTTPResponse DatabaseServer::handleCreateLocation(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleUpdateLocation(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/locations/");
-    auto existingLocation = database_->loadLocation(id);
+    auto existingLocation = database_->loadLocation(UUID::fromString(id));
     
     if (!existingLocation) {
         return errorResponse(404, "Location not found");
@@ -407,7 +408,7 @@ HTTPResponse DatabaseServer::handleUpdateLocation(const HTTPRequest& request) {
         return errorResponse(400, "Invalid location data");
     }
     
-    if (updatedLocation->getId() != id) {
+    if (updatedLocation->getId() != UUID::fromString(id)) {
         return errorResponse(400, "Location ID mismatch");
     }
     
@@ -421,7 +422,7 @@ HTTPResponse DatabaseServer::handleUpdateLocation(const HTTPRequest& request) {
 HTTPResponse DatabaseServer::handleDeleteLocation(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/locations/");
     
-    if (!database_->deleteLocation(id)) {
+    if (!database_->deleteLocation(UUID::fromString(id))) {
         return errorResponse(404, "Location not found or failed to delete");
     }
     
@@ -436,7 +437,7 @@ HTTPResponse DatabaseServer::handleGetProjects(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleGetProject(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/projects/");
-    auto project = database_->loadProject(id);
+    auto project = database_->loadProject(UUID::fromString(id));
     
     if (!project) {
         return errorResponse(404, "Project not found");
@@ -461,7 +462,7 @@ HTTPResponse DatabaseServer::handleCreateProject(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleUpdateProject(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/projects/");
-    auto existingProject = database_->loadProject(id);
+    auto existingProject = database_->loadProject(UUID::fromString(id));
     
     if (!existingProject) {
         return errorResponse(404, "Project not found");
@@ -472,7 +473,7 @@ HTTPResponse DatabaseServer::handleUpdateProject(const HTTPRequest& request) {
         return errorResponse(400, "Invalid project data");
     }
     
-    if (updatedProject->getId() != id) {
+    if (updatedProject->getId() != UUID::fromString(id)) {
         return errorResponse(400, "Project ID mismatch");
     }
     
@@ -486,7 +487,7 @@ HTTPResponse DatabaseServer::handleUpdateProject(const HTTPRequest& request) {
 HTTPResponse DatabaseServer::handleDeleteProject(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/projects/");
     
-    if (!database_->deleteProject(id)) {
+    if (!database_->deleteProject(UUID::fromString(id))) {
         return errorResponse(404, "Project not found or failed to delete");
     }
     
@@ -501,7 +502,7 @@ HTTPResponse DatabaseServer::handleGetCategories(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleGetCategory(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/categories/");
-    auto category = database_->loadCategory(id);
+    auto category = database_->loadCategory(UUID::fromString(id));
     
     if (!category) {
         return errorResponse(404, "Category not found");
@@ -526,7 +527,7 @@ HTTPResponse DatabaseServer::handleCreateCategory(const HTTPRequest& request) {
 
 HTTPResponse DatabaseServer::handleUpdateCategory(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/categories/");
-    auto existingCategory = database_->loadCategory(id);
+    auto existingCategory = database_->loadCategory(UUID::fromString(id));
     
     if (!existingCategory) {
         return errorResponse(404, "Category not found");
@@ -537,7 +538,7 @@ HTTPResponse DatabaseServer::handleUpdateCategory(const HTTPRequest& request) {
         return errorResponse(400, "Invalid category data");
     }
     
-    if (updatedCategory->getId() != id) {
+    if (updatedCategory->getId() != UUID::fromString(id)) {
         return errorResponse(400, "Category ID mismatch");
     }
     
@@ -551,7 +552,7 @@ HTTPResponse DatabaseServer::handleUpdateCategory(const HTTPRequest& request) {
 HTTPResponse DatabaseServer::handleDeleteCategory(const HTTPRequest& request) {
     std::string id = extractIdFromPath(request.path, "/api/categories/");
     
-    if (!database_->deleteCategory(id)) {
+    if (!database_->deleteCategory(UUID::fromString(id))) {
         return errorResponse(404, "Category not found or failed to delete");
     }
     
@@ -719,12 +720,13 @@ std::string DatabaseServer::activityLogToJson(std::shared_ptr<ActivityLog> log) 
     
     std::ostringstream json;
     json << "{"
-         << "\"id\": \"" << log->getId() << "\","
-         << "\"itemId\": \"" << log->getItemId() << "\","
+         << "\"id\": \"" << log->getId().toString() << "\","
+         << "\"itemId\": \"" << (log->getItem() ? log->getItem()->getId().toString() : "") << "\","
          << "\"type\": \"" << log->getTypeString() << "\","
-         << "\"timestamp\": " << log->getTimestamp() << ","
+         << "\"timestamp\": " << std::chrono::duration_cast<std::chrono::milliseconds>(
+                log->getTimestamp().time_since_epoch()).count() << ","
          << "\"userId\": \"" << log->getUserId() << "\","
-         << "\"notes\": \"" << log->getNotes() << "\""
+         << "\"description\": \"" << log->getDescription() << "\""
          << "}";
     
     return json.str();

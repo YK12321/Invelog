@@ -114,10 +114,12 @@ build/
 └── bin/
     ├── Debug/
     │   ├── invelog.exe              # Demo application (debug)
-    │   └── invelog_server.exe       # Database server (debug)
+    │   ├── invelog_server.exe       # Database server (debug)
+    │   └── invelog_server_test.exe  # Server test suite (debug)
     └── Release/
         ├── invelog.exe              # Demo application (release)
-        └── invelog_server.exe       # Database server (release)
+        ├── invelog_server.exe       # Database server (release)
+        └── invelog_server_test.exe  # Server test suite (release)
 ```
 
 ### Linux/macOS
@@ -125,8 +127,15 @@ build/
 build/
 └── bin/
     ├── invelog              # Demo application
-    └── invelog_server       # Database server
+    ├── invelog_server       # Database server
+    └── invelog_server_test  # Server test suite
 ```
+
+### Libraries
+The build also produces static libraries:
+- `invelog_lib` - Core inventory management library
+- `invelog_server_lib` - Server components library
+- `sqlite3` - SQLite database library
 
 ## Running the Executables
 
@@ -150,10 +159,22 @@ build/
 
 See [SERVER_QUICKSTART.md](SERVER_QUICKSTART.md) for more server options.
 
-### Specify Install Prefix
-```bash
-cmake -DCMAKE_INSTALL_PREFIX=/custom/install/path ..
-```
+## Dependencies
+
+The project automatically downloads and manages its dependencies using CMake's FetchContent:
+
+### External Libraries (Automatically Downloaded)
+- **cpp-httplib** v0.15.3 - HTTP server and client library
+- **nlohmann/json** v3.11.3 - JSON parsing and serialization
+- **sqlite3** v3.45.0 - Embedded SQL database (optional)
+
+### System Requirements
+- **OpenSSL** (for HTTPS support) - Optional but recommended
+  - Windows: Use vcpkg or download binaries
+  - Linux: `sudo apt install libssl-dev`
+  - macOS: `brew install openssl`
+
+All dependencies are header-only or downloaded automatically during the CMake configuration step. No manual installation required!
 
 ## IDE Integration
 
@@ -190,11 +211,35 @@ cmake -DCMAKE_INSTALL_PREFIX=/custom/install/path ..
 
 ## Running Tests
 
-Once test suite is implemented:
-```bash
-cd build
-ctest
+The project includes a comprehensive test suite for the database server:
+
+```powershell
+# Windows
+cd build\bin\Release
+.\invelog_server_test.exe
+
+# Linux/macOS
+cd build/bin
+./invelog_server_test
 ```
+
+**Important**: Start the database server before running tests:
+```powershell
+# Terminal 1 - Start server
+.\invelog_server.exe --no-auth
+
+# Terminal 2 - Run tests
+.\invelog_server_test.exe
+```
+
+The test suite validates:
+- ✅ Server connection and health check
+- ✅ Category creation and retrieval
+- ✅ Container creation and retrieval
+- ✅ Item creation, reading, and updating
+- ✅ Data persistence and integrity
+- ✅ Search functionality
+- ✅ JSON serialization/deserialization
 
 ## Clean Build
 

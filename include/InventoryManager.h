@@ -6,9 +6,10 @@
 #include <string>
 #include "UUID.h"
 #include "Database.h"
+#include "ActivityLog.h"
+#include "Container.h"
 
 class Item;
-class Container;
 class Location;
 class Project;
 class Category;

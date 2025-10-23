@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(Invelog VERSION 1.0.0 LANGUAGES CXX)
+project(Invelog VERSION 1.0.0 LANGUAGES CXX C)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -39,6 +39,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(httplib)
 
+# Google Test - Testing framework
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.14.0
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 # SQLite3 (if enabled)
 if(USE_SQLITE)
     find_package(SQLite3)
@@ -54,6 +64,7 @@ if(USE_SQLITE)
             ${sqlite3_SOURCE_DIR}/sqlite3.c
         )
         target_include_directories(sqlite3 PUBLIC ${sqlite3_SOURCE_DIR})
+        set_source_files_properties(${sqlite3_SOURCE_DIR}/sqlite3.c PROPERTIES LANGUAGE C)
         set(SQLite3_LIBRARIES sqlite3)
     endif()
     add_compile_definitions(USE_SQLITE)
@@ -90,7 +101,7 @@ set(SOURCES
     src/LocalDatabase.cpp
     src/SQLDatabase.cpp
     src/APIDatabase.cpp
-    src/DatabaseServer.cpp
+    # src/DatabaseServer.cpp  # DEPRECATED - Using modular server/src/DatabaseAPIServer.cpp instead
     src/InventoryManager.cpp
 )
 
@@ -198,6 +209,27 @@ target_link_libraries(invelog invelog_lib)
 # Database server executable
 add_executable(invelog_server src/server_main.cpp)
 target_link_libraries(invelog_server invelog_server_lib invelog_lib)
+
+# Server test executable (tests API connectivity)
+add_executable(invelog_server_test src/server_test.cpp)
+target_link_libraries(invelog_server_test invelog_lib)
+
+# Unit tests executable
+add_executable(invelog_tests
+    tests/test_uuid.cpp
+    tests/test_entities.cpp
+    tests/test_database.cpp
+    tests/test_inventory_manager.cpp
+)
+target_link_libraries(invelog_tests 
+    invelog_lib
+    GTest::gtest_main
+    GTest::gmock_main
+)
+
+# Register tests with CTest
+include(GoogleTest)
+gtest_discover_tests(invelog_tests)
 
 # Compiler warnings
 if(MSVC)

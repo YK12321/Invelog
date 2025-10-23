@@ -144,6 +144,13 @@ int main(int argc, char* argv[]) {
             std::cerr << "Unknown database type: " << dbType << std::endl;
             return 1;
         }
+        
+        // Connect to the database to initialize directory structure or tables
+        if (!database->connect()) {
+            std::cerr << "Failed to connect to database" << std::endl;
+            return 1;
+        }
+        std::cout << "Successfully connected to database" << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "Error initializing database: " << e.what() << std::endl;

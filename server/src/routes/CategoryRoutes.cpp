@@ -1,14 +1,15 @@
 #include "../include/routes/CategoryRoutes.h"
+#include "../include/routes/RouteHelpers.h"
 #include "../include/serialization/JSONSerializer.h"
 #include "../include/serialization/JSONDeserializer.h"
 #include "../../include/UUID.h"
 #include <stdexcept>
 
-CategoryRoutes::CategoryRoutes(std::shared_ptr<Database> db) : database(db) {}
+CategoryRoutes::CategoryRoutes(std::shared_ptr<IDatabase> db) : database_(db) {}
 
 HTTPResponse CategoryRoutes::handleGetAll(const HTTPRequest& req) {
     try {
-        auto categories = database->loadAllCategories();
+        auto categories = database_->loadAllCategories();
         std::string json = JSONSerializer::serialize(categories);
         return HTTPResponse::ok(json, "application/json");
     } catch (const std::exception& e) {
@@ -18,8 +19,8 @@ HTTPResponse CategoryRoutes::handleGetAll(const HTTPRequest& req) {
 
 HTTPResponse CategoryRoutes::handleGetById(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto category = database->loadCategory(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto category = database_->loadCategory(id);
         
         if (!category) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Category not found"));
@@ -36,7 +37,7 @@ HTTPResponse CategoryRoutes::handleCreate(const HTTPRequest& req) {
     try {
         auto category = JSONDeserializer::deserializeCategory(req.body);
         
-        if (!database->saveCategory(category)) {
+        if (!database_->saveCategory(category)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to save category"));
         }
         
@@ -49,8 +50,8 @@ HTTPResponse CategoryRoutes::handleCreate(const HTTPRequest& req) {
 
 HTTPResponse CategoryRoutes::handleUpdate(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
-        auto category = database->loadCategory(id);
+        UUID id = RouteHelpers::extractUUID(req.path);
+        auto category = database_->loadCategory(id);
         
         if (!category) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Category not found"));
@@ -58,7 +59,7 @@ HTTPResponse CategoryRoutes::handleUpdate(const HTTPRequest& req) {
         
         JSONDeserializer::updateCategory(category, req.body);
         
-        if (!database->saveCategory(category)) {
+        if (!database_->saveCategory(category)) {
             return HTTPResponse::internalError(JSONSerializer::serializeError("Failed to update category"));
         }
         
@@ -71,9 +72,9 @@ HTTPResponse CategoryRoutes::handleUpdate(const HTTPRequest& req) {
 
 HTTPResponse CategoryRoutes::handleDelete(const HTTPRequest& req) {
     try {
-        UUID id = extractUUID(req.path);
+        UUID id = RouteHelpers::extractUUID(req.path);
         
-        if (!database->deleteCategory(id)) {
+        if (!database_->deleteCategory(id)) {
             return HTTPResponse::notFound(JSONSerializer::serializeError("Category not found"));
         }
         
@@ -83,12 +84,11 @@ HTTPResponse CategoryRoutes::handleDelete(const HTTPRequest& req) {
     }
 }
 
-UUID CategoryRoutes::extractUUID(const std::string& path) {
+std::string CategoryRoutes::extractIdFromPath(const std::string& path) {
     size_t lastSlash = path.find_last_of('/');
     if (lastSlash == std::string::npos) {
         throw std::runtime_error("Invalid path format");
     }
     
-    std::string uuidStr = path.substr(lastSlash + 1);
-    return UUID::fromString(uuidStr);
+    return path.substr(lastSlash + 1);
 }

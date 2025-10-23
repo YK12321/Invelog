@@ -18,6 +18,13 @@ public:
          int quantity = 1,
          const std::string& description = "");
     
+    // Constructor that allows specifying the UUID (for deserialization)
+    Item(const UUID& id,
+         const std::string& name,
+         std::shared_ptr<Category> category,
+         int quantity = 1,
+         const std::string& description = "");
+    
     UUID getId() const;
     std::string getName() const;
     std::string getDescription() const;

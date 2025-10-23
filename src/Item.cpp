@@ -16,6 +16,21 @@ Item::Item(const std::string& name,
       lastCheckOutTime_(std::chrono::system_clock::now()) {
 }
 
+Item::Item(const UUID& id,
+           const std::string& name,
+           std::shared_ptr<Category> category,
+           int quantity,
+           const std::string& description)
+    : id_(id),
+      name_(name),
+      description_(description),
+      category_(category),
+      quantity_(quantity),
+      currentContainer_(nullptr),
+      checkedOut_(false),
+      lastCheckOutTime_(std::chrono::system_clock::now()) {
+}
+
 UUID Item::getId() const {
     return id_;
 }
