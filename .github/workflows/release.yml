@@ -1,0 +1,146 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ github.event.inputs.version }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Create source archive
+      run: |
+        git archive --format=zip --output=invelog-${{ github.event.inputs.version }}-source.zip HEAD
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        release_name: Invelog ${{ github.event.inputs.version }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Source Archive
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./invelog-${{ github.event.inputs.version }}-source.zip
+        asset_name: invelog-${{ github.event.inputs.version }}-source.zip
+        asset_content_type: application/zip
+
+  build-release:
+    name: Build for ${{ matrix.os }}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: invelog-linux
+            asset_name: invelog-$VERSION-linux-x64.tar.gz
+          - os: windows-latest
+            artifact_name: invelog-windows
+            asset_name: invelog-$VERSION-windows-x64.zip
+          - os: macos-latest
+            artifact_name: invelog-macos
+            asset_name: invelog-$VERSION-macos-x64.tar.gz
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Configure CMake
+      run: |
+        mkdir -p build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release
+
+    - name: Package binaries (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        mkdir -p package/invelog
+        cp build/bin/invelog package/invelog/ || true
+        cp build/bin/invelog_server package/invelog/ || true
+        cp README.md package/invelog/
+        cp -r docs package/invelog/ || true
+        cd package
+        tar -czf invelog-${{ needs.create-release.outputs.version }}-linux-x64.tar.gz invelog
+
+    - name: Package binaries (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        mkdir -p package/invelog
+        cp build/bin/invelog package/invelog/ || true
+        cp build/bin/invelog_server package/invelog/ || true
+        cp README.md package/invelog/
+        cp -r docs package/invelog/ || true
+        cd package
+        tar -czf invelog-${{ needs.create-release.outputs.version }}-macos-x64.tar.gz invelog
+
+    - name: Package binaries (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path package\invelog
+        Copy-Item -Path build\bin\Release\invelog.exe -Destination package\invelog\ -ErrorAction SilentlyContinue
+        Copy-Item -Path build\bin\Release\invelog_server.exe -Destination package\invelog\ -ErrorAction SilentlyContinue
+        Copy-Item -Path README.md -Destination package\invelog\
+        Copy-Item -Path docs -Destination package\invelog\ -Recurse -ErrorAction SilentlyContinue
+        Compress-Archive -Path package\invelog -DestinationPath package\invelog-${{ needs.create-release.outputs.version }}-windows-x64.zip
+
+    - name: Upload Release Asset (Linux)
+      if: runner.os == 'Linux'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./package/invelog-${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
+        asset_name: invelog-${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload Release Asset (macOS)
+      if: runner.os == 'macOS'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./package/invelog-${{ needs.create-release.outputs.version }}-macos-x64.tar.gz
+        asset_name: invelog-${{ needs.create-release.outputs.version }}-macos-x64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload Release Asset (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./package/invelog-${{ needs.create-release.outputs.version }}-windows-x64.zip
+        asset_name: invelog-${{ needs.create-release.outputs.version }}-windows-x64.zip
+        asset_content_type: application/zip
