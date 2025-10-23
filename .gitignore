@@ -5,6 +5,7 @@ bin/
 lib/
 out/
 _deps/
+package/
 
 # CMake files
 CMakeCache.txt
