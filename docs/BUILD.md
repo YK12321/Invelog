@@ -21,7 +21,7 @@
 
 2. **Navigate to project directory**
    ```powershell
-   cd "c:\Users\thewi\STEM\Inventory Management\Invelog"
+   cd "path\to\Invelog"
    ```
 
 3. **Create build directory**
@@ -104,16 +104,56 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
 
+## Build Outputs
+
+After a successful build, you will find the following executables:
+
+### Windows (Visual Studio)
+```
+build/
+└── bin/
+    ├── Debug/
+    │   ├── invelog.exe              # Demo application (debug)
+    │   └── invelog_server.exe       # Database server (debug)
+    └── Release/
+        ├── invelog.exe              # Demo application (release)
+        └── invelog_server.exe       # Database server (release)
+```
+
+### Linux/macOS
+```
+build/
+└── bin/
+    ├── invelog              # Demo application
+    └── invelog_server       # Database server
+```
+
+## Running the Executables
+
+### Demo Application
+```powershell
+# Windows
+.\bin\Release\invelog.exe
+
+# Linux/macOS
+./bin/invelog
+```
+
+### Database Server
+```powershell
+# Windows - with local database
+.\bin\Release\invelog_server.exe --local ./data --port 8080 --api-key myKey
+
+# Linux/macOS
+./bin/invelog_server --local ./data --port 8080 --api-key myKey
+```
+
+See [SERVER_QUICKSTART.md](SERVER_QUICKSTART.md) for more server options.
+
 ### Specify Install Prefix
 ```bash
 cmake -DCMAKE_INSTALL_PREFIX=/custom/install/path ..
 ```
-
-## Output
-
-After successful build:
-- Libraries will be in `build/lib/`
-- Executables will be in `build/bin/`
 
 ## IDE Integration
 
@@ -170,6 +210,10 @@ cmake --build .
 ## Next Steps
 
 After building, refer to:
-- `docs/ARCHITECTURE.md` for system architecture
-- `docs/API.md` (coming soon) for API documentation
-- Example code in `examples/` directory (coming soon)
+- [QUICKSTART.md](QUICKSTART.md) for getting started guide
+- [ARCHITECTURE.md](ARCHITECTURE.md) for system architecture
+- [SERVER_QUICKSTART.md](SERVER_QUICKSTART.md) for database server setup
+- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for REST API reference
+- Example code in `examples/` directory:
+  - `database_examples.cpp` - Database backend usage examples
+  - `server_client_demo.cpp` - Server/client interaction demo

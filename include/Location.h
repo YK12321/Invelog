@@ -8,7 +8,7 @@
 
 class Container;
 
-class Location {
+class Location : public std::enable_shared_from_this<Location> {
 public:
     Location(const std::string& name, const std::string& address = "");
     

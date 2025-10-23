@@ -2,7 +2,46 @@
 
 ## Overview
 
-Invelog is built using Object-Oriented Programming (OOP) principles in C++ to provide a robust, scalable inventory management system. The architecture is designed for flexibility, allowing easy integration with different database backends.
+Invelog is built using Object-Oriented Programming (OOP) principles in C++ to provide a robust, scalable inventory management system. The architecture is designed for flexibility, allowing easy integration with different database backends. **Version 0.3.0 introduces a modular server architecture** with clean separation of concerns for maintainability and scalability.
+
+## Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Client Applications                   │
+│          (Demo App, Web UI, Mobile, CLI, etc.)          │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ↓
+┌─────────────────────────────────────────────────────────┐
+│              REST API Server (Optional)                  │
+│              DatabaseAPIServer (Modular)                 │
+│    ┌──────────────────────────────────────────────┐    │
+│    │ HTTP │ Routes │ Auth │ Serialization │ etc.  │    │
+│    └──────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ↓
+┌─────────────────────────────────────────────────────────┐
+│              Business Logic Layer                        │
+│                 InventoryManager                         │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ↓
+┌─────────────────────────────────────────────────────────┐
+│              Database Abstraction Layer                  │
+│                    IDatabase Interface                   │
+│    ┌──────────────────────────────────────────────┐    │
+│    │ LocalDB │ SQLDatabase │ APIDatabase          │    │
+│    └──────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ↓
+┌─────────────────────────────────────────────────────────┐
+│                 Storage Backends                         │
+│      Files │ PostgreSQL │ MySQL │ SQLite │ Remote API   │
+└─────────────────────────────────────────────────────────┘
+```
 
 ## Core Components
 
@@ -59,10 +98,51 @@ Invelog is built using Object-Oriented Programming (OOP) principles in C++ to pr
 - Stores data in local directory structure
 - Suitable for single-user scenarios or offline operation
 
-#### Future: SQLDatabase
-- SQL-based database implementation (to be implemented)
+#### SQLDatabase
+- SQL-based database implementation (PostgreSQL, MySQL, SQLite)
 - Supports enterprise-scale deployments
 - Multi-user concurrent access
+- Configurable connection parameters
+
+#### APIDatabase
+- REST API-based database implementation
+- Connects to remote Invelog database servers
+- Suitable for distributed deployments
+- Supports API key authentication
+
+#### DatabaseServer (Modular Architecture v0.3.0)
+- **DatabaseAPIServer**: Main coordinator orchestrating all server components
+- **HTTP Module**:
+  - `HTTPServer`: Wraps cpp-httplib with clean interface
+  - `HTTPRequest`/`HTTPResponse`: Request/response structures
+  - `RouteHandler`: Function type for route handlers
+- **Route Handlers**: Dedicated handler classes per entity type
+  - `ItemRoutes`: Item CRUD + move/checkout/checkin operations
+  - `ContainerRoutes`: Container CRUD + items/subcontainers
+  - `LocationRoutes`: Location CRUD + containers
+  - `ProjectRoutes`: Project CRUD + containers
+  - `CategoryRoutes`: Category CRUD operations
+  - `ActivityLogRoutes`: Activity log queries
+- **Serialization**:
+  - `JSONSerializer`: Entity → JSON conversion
+  - `JSONDeserializer`: JSON → Entity conversion
+- **Authentication**:
+  - `Authenticator`: API key and Bearer token validation
+- **Configuration**:
+  - `ServerConfig`: Port, auth, CORS, limits, timeouts
+- Features:
+  - 30+ REST endpoints (GET, POST, PUT, DELETE)
+  - API key authentication (X-API-Key header or Bearer token)
+  - CORS support for web clients
+  - Configurable request limits and timeouts
+  - Health check endpoint
+  - Modular design (25 files, 20-220 lines each)
+  - Clean separation of concerns
+  - Easy to test and maintain
+- Works with any IDatabase backend (local, SQL, API)
+- Standalone executable (`invelog_server`)
+- See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for endpoint details
+- See [MODULAR_ARCHITECTURE.md](../MODULAR_ARCHITECTURE.md) for architecture details
 
 ### 4. Business Logic Layer
 
@@ -98,6 +178,7 @@ Invelog is built using Object-Oriented Programming (OOP) principles in C++ to pr
 
 ## Data Flow
 
+### Standard Application Flow
 ```
 User/API
     ↓
@@ -107,7 +188,22 @@ Domain Objects (Item, Container, Project, etc.)
     ↓
 IDatabase (Abstract Interface)
     ↓
-LocalDatabase / SQLDatabase (Implementation)
+LocalDatabase / SQLDatabase / APIDatabase (Implementation)
+    ↓
+Storage (Files / SQL Database / Remote API)
+```
+
+### Database Server Flow
+```
+HTTP Client
+    ↓
+HTTP REST API (DatabaseServer)
+    ↓
+Authentication (API Key)
+    ↓
+IDatabase (Abstract Interface)
+    ↓
+LocalDatabase / SQLDatabase (Backend)
     ↓
 Storage (Files / SQL Database)
 ```
@@ -145,6 +241,8 @@ Storage (Files / SQL Database)
 3. **Additional Container Types**: Extend `ContainerType` enum
 4. **Search Algorithms**: Add methods to `InventoryManager`
 5. **Export/Import**: Add serialization layers
+6. **Custom REST Endpoints**: Extend `DatabaseServer` class
+7. **Authentication Methods**: Customize API authentication in `DatabaseServer`
 
 ## Performance Considerations
 
@@ -162,11 +260,21 @@ Storage (Files / SQL Database)
 
 ## Future Enhancements
 
-1. **SQL Database Implementation**
-2. **REST API Layer**
-3. **Real-time Notifications**
-4. **Advanced Search and Filtering**
-5. **Reporting and Analytics**
-6. **Multi-user Concurrency Control**
-7. **Data Import/Export (CSV, JSON)**
-8. **Barcode/QR Code Integration**
+1. ✅ **SQL Database Implementation** - COMPLETED
+2. ✅ **REST API Layer** - COMPLETED (DatabaseServer)
+3. **Real-time Notifications** - WebSocket support
+4. **Advanced Search and Filtering** - Full-text search
+5. **Reporting and Analytics** - Data visualization
+6. **Multi-user Concurrency Control** - Lock management
+7. **Data Import/Export** - CSV, JSON, XML support
+8. **Barcode/QR Code Integration** - Scanner support
+9. **Mobile Application** - React Native or Flutter client
+10. **Web Dashboard** - React/Vue.js web interface
+
+## Additional Documentation
+
+- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Complete REST API reference
+- [DATABASE_GUIDE.md](DATABASE_GUIDE.md) - Database backend configuration
+- [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Production deployment guide
+- [SERVER_QUICKSTART.md](SERVER_QUICKSTART.md) - Quick server setup
+- [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) - Visual architecture diagrams

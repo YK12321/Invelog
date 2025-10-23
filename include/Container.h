@@ -15,7 +15,7 @@ enum class ContainerType {
     SUBCONTAINER    // Nested container
 };
 
-class Container {
+class Container : public std::enable_shared_from_this<Container> {
 public:
     Container(const std::string& name, 
               ContainerType type = ContainerType::INVENTORY,
