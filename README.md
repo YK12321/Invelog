@@ -352,4 +352,4 @@ Invelog/
 
 ---
 
-**Built for makers, engineers, and organizations who need precise inventory control.**
+**Built for makers and organizations who need precise inventory control.**
