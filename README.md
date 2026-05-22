@@ -34,7 +34,7 @@ Invelog is a robust inventory management backend designed to track electronic co
 
 1. Clone the repository and navigate to the project directory:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/YK12321/Invelog
    cd invelog
    ```
 
