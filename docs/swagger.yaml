@@ -1,0 +1,1147 @@
+basePath: /api/v1
+definitions:
+  invelog_pkg_models.ActivityLog:
+    properties:
+      action:
+        description: e.g., "CREATED", "MODIFIED", "DELETED", "MOVED", "CHECK_IN",
+          "CHECK_OUT", "QUANTITY_ADJUSTED", "ASSIGNED_TO_PROJECT", "RETURNED_FROM_PROJECT"
+        type: string
+      created_at:
+        type: string
+      details:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        description: e.g., "Item", "Container", "Location"
+        type: string
+      from_container:
+        $ref: '#/definitions/invelog_pkg_models.Container'
+      from_container_id:
+        type: string
+      id:
+        type: string
+      project:
+        $ref: '#/definitions/invelog_pkg_models.Project'
+      project_id:
+        type: string
+      quantity_change:
+        type: integer
+      to_container:
+        $ref: '#/definitions/invelog_pkg_models.Container'
+      to_container_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        description: 'Optional: If we ever add users'
+        type: string
+    type: object
+  invelog_pkg_models.Category:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  invelog_pkg_models.Container:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/invelog_pkg_models.Location'
+      location_id:
+        type: string
+      name:
+        type: string
+      parent:
+        $ref: '#/definitions/invelog_pkg_models.Container'
+      parent_id:
+        type: string
+      project:
+        $ref: '#/definitions/invelog_pkg_models.Project'
+      project_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  invelog_pkg_models.Item:
+    properties:
+      category:
+        $ref: '#/definitions/invelog_pkg_models.Category'
+      category_id:
+        type: string
+      checked_out:
+        type: boolean
+      container:
+        $ref: '#/definitions/invelog_pkg_models.Container'
+      container_id:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      individual_notes:
+        type: string
+      item_type:
+        $ref: '#/definitions/invelog_pkg_models.ItemType'
+      item_type_id:
+        type: string
+      last_check_out_time:
+        type: string
+      name:
+        description: Used if ItemType is not provided
+        type: string
+      origin_location:
+        $ref: '#/definitions/invelog_pkg_models.Location'
+      origin_location_id:
+        type: string
+      quantity:
+        type: integer
+      serial_number:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  invelog_pkg_models.ItemType:
+    properties:
+      category:
+        $ref: '#/definitions/invelog_pkg_models.Category'
+      category_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      manufacturer:
+        type: string
+      name:
+        type: string
+      part_number:
+        type: string
+      specifications:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  invelog_pkg_models.Location:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  invelog_pkg_models.Project:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        description: e.g., "active", "completed", "archived"
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A comprehensive inventory management system backend for electronic
+    components.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Invelog API
+  version: "1.0"
+paths:
+  /activity-logs:
+    get:
+      description: Get all activity logs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.ActivityLog'
+            type: array
+      summary: List Activity Logs
+      tags:
+      - Activity Logs
+  /categories:
+    get:
+      description: Get all categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.Category'
+            type: array
+      summary: List Categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category
+      parameters:
+      - description: Category Data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Category'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Category'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Category
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      description: Delete a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Category
+      tags:
+      - Categories
+    get:
+      description: Get a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Category'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Category
+      tags:
+      - Categories
+    put:
+      consumes:
+      - application/json
+      description: Update a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category Data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Category'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update Category
+      tags:
+      - Categories
+  /containers:
+    get:
+      description: Get all containers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.Container'
+            type: array
+      summary: List Containers
+      tags:
+      - Containers
+    post:
+      consumes:
+      - application/json
+      description: Create a new container
+      parameters:
+      - description: Container Data
+        in: body
+        name: container
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Container'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Container'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Container
+      tags:
+      - Containers
+  /containers/{id}:
+    delete:
+      description: Delete a container by ID
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Container
+      tags:
+      - Containers
+    get:
+      description: Get a container by ID
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Container'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Container
+      tags:
+      - Containers
+    put:
+      consumes:
+      - application/json
+      description: Update a container by ID
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Container Data
+        in: body
+        name: container
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Container'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Container'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update Container
+      tags:
+      - Containers
+  /health:
+    get:
+      description: Check if the API is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health Check
+      tags:
+      - System
+  /item-types:
+    get:
+      description: Get all item types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.ItemType'
+            type: array
+      summary: List ItemTypes
+      tags:
+      - ItemTypes
+    post:
+      consumes:
+      - application/json
+      description: Create a new item type
+      parameters:
+      - description: ItemType Data
+        in: body
+        name: itemType
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.ItemType'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.ItemType'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create ItemType
+      tags:
+      - ItemTypes
+  /item-types/{id}:
+    delete:
+      description: Delete an item type by ID
+      parameters:
+      - description: ItemType ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete ItemType
+      tags:
+      - ItemTypes
+    get:
+      description: Get an item type by ID
+      parameters:
+      - description: ItemType ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.ItemType'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get ItemType
+      tags:
+      - ItemTypes
+    put:
+      consumes:
+      - application/json
+      description: Update an item type by ID
+      parameters:
+      - description: ItemType ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: ItemType Data
+        in: body
+        name: itemType
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.ItemType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.ItemType'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update ItemType
+      tags:
+      - ItemTypes
+  /items:
+    get:
+      description: Get all items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.Item'
+            type: array
+      summary: List Items
+      tags:
+      - Items
+    post:
+      consumes:
+      - application/json
+      description: Create a new item
+      parameters:
+      - description: Item Data
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Item'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Item
+      tags:
+      - Items
+  /items/{id}:
+    delete:
+      description: Delete an item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Item
+      tags:
+      - Items
+    get:
+      description: Get an item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Item'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Item
+      tags:
+      - Items
+    put:
+      consumes:
+      - application/json
+      description: Update an item by ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Item Data
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Item'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update Item
+      tags:
+      - Items
+  /items/{id}/checkin:
+    post:
+      description: Check in an item by marking it as not checked out and logging the
+        activity
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check in an item
+      tags:
+      - Items
+  /items/{id}/checkout:
+    post:
+      description: Check out an item by marking it as checked out and logging the
+        activity
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check out an item
+      tags:
+      - Items
+  /items/{id}/move:
+    post:
+      description: Move an item to a different container
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New Container ID
+        in: query
+        name: container_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Move Item
+      tags:
+      - Items
+  /locations:
+    get:
+      description: Get all locations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.Location'
+            type: array
+      summary: List Locations
+      tags:
+      - Locations
+    post:
+      consumes:
+      - application/json
+      description: Create a new location
+      parameters:
+      - description: Location Data
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Location'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Location'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Location
+      tags:
+      - Locations
+  /locations/{id}:
+    delete:
+      description: Delete a location by ID
+      parameters:
+      - description: Location ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Location
+      tags:
+      - Locations
+    get:
+      description: Get a location by ID
+      parameters:
+      - description: Location ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Location'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Location
+      tags:
+      - Locations
+    put:
+      consumes:
+      - application/json
+      description: Update a location by ID
+      parameters:
+      - description: Location ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Location Data
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Location'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Location'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update Location
+      tags:
+      - Locations
+  /projects:
+    get:
+      description: Get all projects
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.Project'
+            type: array
+      summary: List Projects
+      tags:
+      - Projects
+    post:
+      consumes:
+      - application/json
+      description: Create a new project
+      parameters:
+      - description: Project Data
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Project'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Project'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create Project
+      tags:
+      - Projects
+  /projects/{id}:
+    delete:
+      description: Delete a project by ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete Project
+      tags:
+      - Projects
+    get:
+      description: Get a project by ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Project'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Project
+      tags:
+      - Projects
+    put:
+      consumes:
+      - application/json
+      description: Update a project by ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Project Data
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/invelog_pkg_models.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/invelog_pkg_models.Project'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update Project
+      tags:
+      - Projects
+  /search/items:
+    get:
+      description: Search across items using query parameters
+      parameters:
+      - description: Search query (matches name, description, notes)
+        in: query
+        name: query
+        type: string
+      - description: Filter by Category ID
+        in: query
+        name: category_id
+        type: string
+      - description: Filter by Container ID
+        in: query
+        name: container_id
+        type: string
+      - description: Filter by Project ID
+        in: query
+        name: project_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/invelog_pkg_models.Item'
+            type: array
+      summary: Search Items
+      tags:
+      - Search
+swagger: "2.0"
