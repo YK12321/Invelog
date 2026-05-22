@@ -1,0 +1,90 @@
+# Build directories
+build/
+cmake-build-*/
+bin/
+lib/
+out/
+_deps/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# FetchContent downloads
+external/
+_deps/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+*.sln
+*.vcxproj*
+
+# Compiled Object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+*.la
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+data/
+test_data/
+
+# JSON data files (generated)
+*.json
+!package.json
+!tsconfig.json
+!.vscode/*.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup files
+*~
+*.swp
+*.bak
+*.tmp
+
+# Certificate files (for HTTPS)
+*.pem
+*.crt
+*.key
+
+# Environment files
+.env
+.env.local
+*.env
