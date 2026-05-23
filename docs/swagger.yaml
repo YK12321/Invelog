@@ -483,6 +483,15 @@ paths:
   /item-types:
     get:
       description: Get all item types
+      parameters:
+      - description: Limit (default 100, max 1000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:

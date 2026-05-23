@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"invelog/pkg/models"
 
@@ -38,11 +39,29 @@ func (h *Handler) CreateItemType(c *gin.Context) {
 // @Description Get all item types
 // @Tags ItemTypes
 // @Produce json
+// @Param limit query int false "Limit (default 100, max 1000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.ItemType
 // @Router /item-types [get]
 func (h *Handler) ListItemTypes(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "100")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 100
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var itemTypes []models.ItemType
-	h.DB.Preload("Category").Find(&itemTypes)
+	h.DB.Preload("Category").Limit(limit).Offset(offset).Find(&itemTypes)
 	c.JSON(http.StatusOK, itemTypes)
 }
 
