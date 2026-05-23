@@ -34,14 +34,32 @@ const docTemplate = `{
                     "Activity Logs"
                 ],
                 "summary": "List Activity Logs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit the number of logs returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset for pagination (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID for user-specific settings",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.ActivityLog"
-                            }
+                            "$ref": "#/definitions/invelog_pkg_models.PaginatedActivityLogsResponse"
                         }
                     }
                 }
@@ -485,14 +503,21 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Limit (default 100, max 1000)",
+                        "description": "Limit the number of item types returned",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset (default 0)",
+                        "default": 0,
+                        "description": "Offset for pagination (default 0)",
                         "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID for user-specific settings",
+                        "name": "user_id",
                         "in": "query"
                     }
                 ],
@@ -500,10 +525,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.ItemType"
-                            }
+                            "$ref": "#/definitions/invelog_pkg_models.PaginatedItemTypesResponse"
                         }
                     }
                 }
@@ -689,7 +711,7 @@ const docTemplate = `{
         },
         "/items": {
             "get": {
-                "description": "Get all items",
+                "description": "Get all items with pagination",
                 "produces": [
                     "application/json"
                 ],
@@ -697,14 +719,32 @@ const docTemplate = `{
                     "Items"
                 ],
                 "summary": "List Items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit the number of items returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset for pagination (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID for user-specific settings",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Item"
-                            }
+                            "$ref": "#/definitions/invelog_pkg_models.PaginatedItemsResponse"
                         }
                     }
                 }
@@ -1486,6 +1526,116 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/settings/admin": {
+            "put": {
+                "description": "Set a global admin setting (e.g., default pagination limit)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Set Admin Setting",
+                "parameters": [
+                    {
+                        "description": "Admin Setting Data",
+                        "name": "setting",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pkg_api_handlers.SetAdminSettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/settings/user": {
+            "put": {
+                "description": "Set a user-specific setting (e.g., custom pagination limit)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Set User Setting",
+                "parameters": [
+                    {
+                        "description": "User Setting Data",
+                        "name": "setting",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pkg_api_handlers.SetUserSettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1761,6 +1911,66 @@ const docTemplate = `{
                 }
             }
         },
+        "invelog_pkg_models.PaginatedActivityLogsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/invelog_pkg_models.ActivityLog"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "invelog_pkg_models.PaginatedItemTypesResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "invelog_pkg_models.PaginatedItemsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/invelog_pkg_models.Item"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "invelog_pkg_models.Project": {
             "type": "object",
             "properties": {
@@ -1781,6 +1991,40 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pkg_api_handlers.SetAdminSettingRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "value"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "pkg_api_handlers.SetUserSettingRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "user_id",
+                "value"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }

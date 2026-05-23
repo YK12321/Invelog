@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"invelog/pkg/models"
+	"invelog/pkg/settings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -11,11 +12,15 @@ import (
 )
 
 type Handler struct {
-	DB *gorm.DB
+	DB       *gorm.DB
+	Settings *settings.SettingsManager
 }
 
 func NewHandler(db *gorm.DB) *Handler {
-	return &Handler{DB: db}
+	return &Handler{
+		DB:       db,
+		Settings: settings.NewSettingsManager(db),
+	}
 }
 
 // @Summary Health Check

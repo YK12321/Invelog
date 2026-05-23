@@ -39,21 +39,31 @@ func (h *Handler) CreateItemType(c *gin.Context) {
 // @Description Get all item types
 // @Tags ItemTypes
 // @Produce json
-// @Param limit query int false "Limit (default 100, max 1000)"
-// @Param offset query int false "Offset (default 0)"
-// @Success 200 {array} models.ItemType
+// @Param limit query int false "Limit the number of item types returned"
+// @Param offset query int false "Offset for pagination (default 0)" default(0)
+// @Param user_id query string false "User ID for user-specific settings"
+// @Success 200 {object} models.PaginatedItemTypesResponse
 // @Router /item-types [get]
 func (h *Handler) ListItemTypes(c *gin.Context) {
-	limitStr := c.DefaultQuery("limit", "100")
+	limitStr := c.Query("limit")
 	offsetStr := c.DefaultQuery("offset", "0")
+	userIDStr := c.Query("user_id")
 
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		limit = 100
+	var userID *uuid.UUID
+	if userIDStr != "" {
+		if id, err := uuid.Parse(userIDStr); err == nil {
+			userID = &id
+		}
 	}
-	if limit > 1000 {
-		limit = 1000
+
+	requestedLimit := 0
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil {
+			requestedLimit = l
+		}
 	}
+
+	limit := h.Settings.ResolveLimit("ITEM_TYPES_DEFAULT_LIMIT", requestedLimit, userID)
 
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil || offset < 0 {
@@ -61,8 +71,23 @@ func (h *Handler) ListItemTypes(c *gin.Context) {
 	}
 
 	var itemTypes []models.ItemType
-	h.DB.Preload("Category").Limit(limit).Offset(offset).Find(&itemTypes)
-	c.JSON(http.StatusOK, itemTypes)
+	var total int64
+
+	h.DB.Model(&models.ItemType{}).Count(&total)
+
+	h.DB.Preload("Category").
+		Limit(limit).
+		Offset(offset).
+		Find(&itemTypes)
+
+	response := models.PaginatedResponse[models.ItemType]{
+		Items:  itemTypes,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // @Summary Get ItemType

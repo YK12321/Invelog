@@ -181,6 +181,45 @@ definitions:
       updated_at:
         type: string
     type: object
+  invelog_pkg_models.PaginatedActivityLogsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/invelog_pkg_models.ActivityLog'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  invelog_pkg_models.PaginatedItemTypesResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/invelog_pkg_models.ItemType'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  invelog_pkg_models.PaginatedItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/invelog_pkg_models.Item'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   invelog_pkg_models.Project:
     properties:
       created_at:
@@ -196,6 +235,29 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  pkg_api_handlers.SetAdminSettingRequest:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    required:
+    - key
+    - value
+    type: object
+  pkg_api_handlers.SetUserSettingRequest:
+    properties:
+      key:
+        type: string
+      user_id:
+        type: string
+      value:
+        type: string
+    required:
+    - key
+    - user_id
+    - value
     type: object
   pkg_api_handlers.UpdateItemInput:
     properties:
@@ -236,15 +298,27 @@ paths:
   /activity-logs:
     get:
       description: Get all activity logs
+      parameters:
+      - description: Limit the number of logs returned
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: User ID for user-specific settings
+        in: query
+        name: user_id
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/invelog_pkg_models.ActivityLog'
-            type: array
+            $ref: '#/definitions/invelog_pkg_models.PaginatedActivityLogsResponse'
       summary: List Activity Logs
       tags:
       - Activity Logs
@@ -533,23 +607,26 @@ paths:
     get:
       description: Get all item types
       parameters:
-      - description: Limit (default 100, max 1000)
+      - description: Limit the number of item types returned
         in: query
         name: limit
         type: integer
-      - description: Offset (default 0)
+      - default: 0
+        description: Offset for pagination (default 0)
         in: query
         name: offset
         type: integer
+      - description: User ID for user-specific settings
+        in: query
+        name: user_id
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/invelog_pkg_models.ItemType'
-            type: array
+            $ref: '#/definitions/invelog_pkg_models.PaginatedItemTypesResponse'
       summary: List ItemTypes
       tags:
       - ItemTypes
@@ -673,16 +750,28 @@ paths:
       - ItemTypes
   /items:
     get:
-      description: Get all items
+      description: Get all items with pagination
+      parameters:
+      - description: Limit the number of items returned
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: User ID for user-specific settings
+        in: query
+        name: user_id
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/invelog_pkg_models.Item'
-            type: array
+            $ref: '#/definitions/invelog_pkg_models.PaginatedItemsResponse'
       summary: List Items
       tags:
       - Items
@@ -1202,4 +1291,76 @@ paths:
       summary: Search Items
       tags:
       - Search
+  /settings/admin:
+    put:
+      consumes:
+      - application/json
+      description: Set a global admin setting (e.g., default pagination limit)
+      parameters:
+      - description: Admin Setting Data
+        in: body
+        name: setting
+        required: true
+        schema:
+          $ref: '#/definitions/pkg_api_handlers.SetAdminSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Set Admin Setting
+      tags:
+      - Settings
+  /settings/user:
+    put:
+      consumes:
+      - application/json
+      description: Set a user-specific setting (e.g., custom pagination limit)
+      parameters:
+      - description: User Setting Data
+        in: body
+        name: setting
+        required: true
+        schema:
+          $ref: '#/definitions/pkg_api_handlers.SetUserSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Set User Setting
+      tags:
+      - Settings
 swagger: "2.0"

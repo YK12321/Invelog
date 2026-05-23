@@ -73,6 +73,8 @@ func Migrate(db *gorm.DB) error {
 		&models.ItemType{},
 		&models.Item{},
 		&models.ActivityLog{},
+		&models.GlobalSetting{},
+		&models.UserSetting{},
 	)
 	if err != nil {
 		return err

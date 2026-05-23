@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"invelog/pkg/dto"
 	"invelog/pkg/models"
@@ -53,15 +54,58 @@ func (h *Handler) CreateItem(c *gin.Context) {
 }
 
 // @Summary List Items
-// @Description Get all items
+// @Description Get all items with pagination
 // @Tags Items
 // @Produce json
-// @Success 200 {array} models.Item
+// @Param limit query int false "Limit the number of items returned"
+// @Param offset query int false "Offset for pagination (default 0)" default(0)
+// @Param user_id query string false "User ID for user-specific settings"
+// @Success 200 {object} models.PaginatedItemsResponse
 // @Router /items [get]
 func (h *Handler) ListItems(c *gin.Context) {
+	limitStr := c.Query("limit")
+	offsetStr := c.DefaultQuery("offset", "0")
+	userIDStr := c.Query("user_id")
+
+	var userID *uuid.UUID
+	if userIDStr != "" {
+		if id, err := uuid.Parse(userIDStr); err == nil {
+			userID = &id
+		}
+	}
+
+	requestedLimit := 0
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil {
+			requestedLimit = l
+		}
+	}
+
+	limit := h.Settings.ResolveLimit("ITEMS_DEFAULT_LIMIT", requestedLimit, userID)
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var items []models.Item
-	h.DB.Preload("Category").Preload("Container").Find(&items)
-	c.JSON(http.StatusOK, items)
+	var total int64
+
+	h.DB.Model(&models.Item{}).Count(&total)
+
+	h.DB.Preload("Category").Preload("Container").
+		Limit(limit).
+		Offset(offset).
+		Find(&items)
+
+	response := models.PaginatedResponse[models.Item]{
+		Items:  items,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // @Summary Get Item

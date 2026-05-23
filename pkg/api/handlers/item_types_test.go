@@ -64,9 +64,9 @@ func BenchmarkListItemTypes(b *testing.B) {
 
 		// Just to verify it's working
 		if i == 0 {
-			var items []models.ItemType
-			json.Unmarshal(w.Body.Bytes(), &items)
-			b.Logf("Retrieved %d items on first request", len(items))
+			var resp models.PaginatedResponse[models.ItemType]
+			json.Unmarshal(w.Body.Bytes(), &resp)
+			b.Logf("Retrieved %d items on first request (Total: %d)", len(resp.Items), resp.Total)
 		}
 	}
 }

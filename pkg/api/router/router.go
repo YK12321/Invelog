@@ -71,6 +71,10 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 		// Activity Logs
 		api.GET("/activity-logs", h.ListActivityLogs)
+
+		// Settings
+		api.PUT("/settings/admin", h.SetAdminSetting)
+		api.PUT("/settings/user", h.SetUserSetting)
 	}
 
 	return r
