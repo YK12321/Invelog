@@ -169,6 +169,13 @@ definitions:
       updated_at:
         type: string
     type: object
+  pkg_api_handlers.UpdateCategoryInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -309,7 +316,7 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Category'
+          $ref: '#/definitions/pkg_api_handlers.UpdateCategoryInput'
       produces:
       - application/json
       responses:

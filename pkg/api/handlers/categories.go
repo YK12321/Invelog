@@ -9,6 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type UpdateCategoryInput struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
 // @Summary Create Category
 // @Description Create a new category
 // @Tags Categories
@@ -76,7 +81,7 @@ func (h *Handler) GetCategory(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Category ID"
-// @Param category body models.Category true "Category Data"
+// @Param category body UpdateCategoryInput true "Category Data"
 // @Success 200 {object} models.Category
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -94,11 +99,19 @@ func (h *Handler) UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&category); err != nil {
+	var input UpdateCategoryInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	category.ID = id // Ensure ID cannot be changed
+
+	// Map updated fields
+	if input.Name != nil {
+		category.Name = *input.Name
+	}
+	if input.Description != nil {
+		category.Description = *input.Description
+	}
 
 	if err := h.DB.Save(&category).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update category"})
