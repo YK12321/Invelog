@@ -1,0 +1,3 @@
+## 2024-05-24 - Unbounded List Queries Anti-Pattern
+**Learning:** Found several API handlers (like `ListActivityLogs`, `ListLocations`, `ListCategories`, etc.) using unbounded `h.DB.Find(&items)` queries. In particular, `ActivityLogs` can grow indefinitely with every user action. An unbounded query on this table will result in massive JSON payloads and runaway memory allocation (O(N) space complexity and DB transfer overhead).
+**Action:** Always implement pagination (`limit` and `offset`) for list endpoints, particularly for unbounded log tables. Use a sensible default limit (e.g., 100) and max limit.
