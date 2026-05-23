@@ -1,5 +1,26 @@
 basePath: /api/v1
 definitions:
+  invelog_pkg_dto.CreateItemRequest:
+    properties:
+      category_id:
+        type: string
+      container_id:
+        type: string
+      description:
+        type: string
+      individual_notes:
+        type: string
+      item_type_id:
+        type: string
+      name:
+        type: string
+      origin_location_id:
+        type: string
+      quantity:
+        type: integer
+      serial_number:
+        type: string
+    type: object
   invelog_pkg_models.ActivityLog:
     properties:
       action:
@@ -638,7 +659,7 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Item'
+          $ref: '#/definitions/invelog_pkg_dto.CreateItemRequest'
       produces:
       - application/json
       responses:
