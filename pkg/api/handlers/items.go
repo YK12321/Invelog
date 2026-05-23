@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -14,15 +15,32 @@ import (
 // @Tags Items
 // @Accept json
 // @Produce json
-// @Param item body models.Item true "Item Data"
+// @Param item body dto.CreateItemRequest true "Item Data"
 // @Success 201 {object} models.Item
 // @Failure 400 {object} map[string]string
 // @Router /items [post]
 func (h *Handler) CreateItem(c *gin.Context) {
-	var item models.Item
-	if err := c.ShouldBindJSON(&item); err != nil {
+	var req dto.CreateItemRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	item := models.Item{
+		Name:             req.Name,
+		Description:      req.Description,
+		IndividualNotes:  req.IndividualNotes,
+		SerialNumber:     req.SerialNumber,
+		ItemTypeID:       req.ItemTypeID,
+		CategoryID:       req.CategoryID,
+		ContainerID:      req.ContainerID,
+		OriginLocationID: req.OriginLocationID,
+	}
+
+	if req.Quantity != nil {
+		item.Quantity = *req.Quantity
+	} else {
+		item.Quantity = 1
 	}
 
 	if err := h.DB.Create(&item).Error; err != nil {

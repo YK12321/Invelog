@@ -728,7 +728,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/invelog_pkg_dto.CreateItemRequest"
                         }
                     }
                 ],
@@ -1489,6 +1489,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "invelog_pkg_dto.CreateItemRequest": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "container_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "individual_notes": {
+                    "type": "string"
+                },
+                "item_type_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "origin_location_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "serial_number": {
+                    "type": "string"
+                }
+            }
+        },
         "invelog_pkg_models.ActivityLog": {
             "type": "object",
             "properties": {
