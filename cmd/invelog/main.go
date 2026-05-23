@@ -29,7 +29,7 @@ func main() {
 	// 1. Initialize Database
 	dbConfig := database.Config{
 		Type:     getEnv("DB_TYPE", "sqlite"),
-		Database: getEnv("DB_NAME", "invelog.db"),
+		Database: getEnv("DB_NAME", ""),
 		Host:     getEnv("DB_HOST", "localhost"),
 		Port:     getEnv("DB_PORT", "5432"),
 		User:     getEnv("DB_USER", "postgres"),

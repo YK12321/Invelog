@@ -25,16 +25,16 @@ type Config struct {
 }
 
 func Connect(cfg Config) (*gorm.DB, error) {
+	if cfg.Database == "" {
+		return nil, fmt.Errorf("database name (DB_NAME) must be provided")
+	}
+
 	var dialector gorm.Dialector
 
 	switch cfg.Type {
 	case "sqlite":
 		// Database acts as file path for sqlite
-		dbPath := cfg.Database
-		if dbPath == "" {
-			dbPath = "invelog.db"
-		}
-		dialector = sqlite.Open(dbPath)
+		dialector = sqlite.Open(cfg.Database)
 	case "postgres":
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 			cfg.Host, cfg.User, cfg.Password, cfg.Database, cfg.Port, cfg.SSLMode)

@@ -50,9 +50,9 @@ Invelog is a robust inventory management backend designed to track electronic co
 
 4. Run the server:
    ```bash
-   ./bin/invelog
+   DB_NAME=invelog.db ./bin/invelog
    ```
-   By default, the server will start on `localhost:8080` and create a local SQLite database named `invelog.db`.
+   By default, the server will start on `localhost:8080`. Note that a `DB_NAME` must be explicitly provided.
 
 ### API Documentation
 
@@ -72,7 +72,7 @@ Invelog uses environment variables to configure the database and server port.
 |----------|-------------|---------|
 | `PORT` | The port the HTTP server binds to | `8080` |
 | `DB_TYPE` | Database driver (`sqlite`, `postgres`, `mysql`) | `sqlite` |
-| `DB_NAME` | Database name or SQLite file path | `invelog.db` |
+| `DB_NAME` | Database name or SQLite file path | **(Required)** |
 | `DB_HOST` | Database host | `localhost` |
 | `DB_PORT` | Database port | `5432` |
 | `DB_USER` | Database user | `postgres` |
