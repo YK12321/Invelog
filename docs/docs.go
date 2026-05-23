@@ -174,7 +174,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Category"
+                            "$ref": "#/definitions/invelog_pkg_dto.UpdateCategoryInput"
                         }
                     }
                 ],
@@ -1517,6 +1517,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "serial_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "invelog_pkg_dto.UpdateCategoryInput": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
