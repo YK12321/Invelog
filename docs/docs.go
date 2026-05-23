@@ -809,12 +809,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Item Data",
+                        "description": "Item Update Data",
                         "name": "item",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/pkg_api_handlers.UpdateItemInput"
                         }
                     }
                 ],
@@ -1770,6 +1770,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pkg_api_handlers.UpdateItemInput": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "container_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "individual_notes": {
+                    "type": "string"
+                },
+                "item_type_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "origin_location_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "serial_number": {
                     "type": "string"
                 }
             }
