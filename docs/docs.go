@@ -675,7 +675,7 @@ const docTemplate = `{
         },
         "/items": {
             "get": {
-                "description": "Get all items",
+                "description": "Get all items with pagination",
                 "produces": [
                     "application/json"
                 ],
@@ -683,14 +683,27 @@ const docTemplate = `{
                     "Items"
                 ],
                 "summary": "List Items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Limit the number of items returned (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset for pagination (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Item"
-                            }
+                            "$ref": "#/definitions/invelog_pkg_models.PaginatedItemsResponse"
                         }
                     }
                 }
@@ -1701,6 +1714,26 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "invelog_pkg_models.PaginatedItemsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/invelog_pkg_models.Item"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
