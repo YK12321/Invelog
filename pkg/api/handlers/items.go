@@ -70,13 +70,25 @@ func (h *Handler) GetItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+type UpdateItemInput struct {
+	Name             *string    `json:"name"`
+	Description      *string    `json:"description"`
+	Quantity         *int       `json:"quantity"`
+	IndividualNotes  *string    `json:"individual_notes"`
+	SerialNumber     *string    `json:"serial_number"`
+	ItemTypeID       *uuid.UUID `json:"item_type_id"`
+	CategoryID       *uuid.UUID `json:"category_id"`
+	ContainerID      *uuid.UUID `json:"container_id"`
+	OriginLocationID *uuid.UUID `json:"origin_location_id"`
+}
+
 // @Summary Update Item
 // @Description Update an item by ID
 // @Tags Items
 // @Accept json
 // @Produce json
 // @Param id path string true "Item ID"
-// @Param item body models.Item true "Item Data"
+// @Param item body UpdateItemInput true "Item Update Data"
 // @Success 200 {object} models.Item
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -94,11 +106,39 @@ func (h *Handler) UpdateItem(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&item); err != nil {
+	var input UpdateItemInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	item.ID = id // Ensure ID cannot be changed
+
+	if input.Name != nil {
+		item.Name = *input.Name
+	}
+	if input.Description != nil {
+		item.Description = *input.Description
+	}
+	if input.Quantity != nil {
+		item.Quantity = *input.Quantity
+	}
+	if input.IndividualNotes != nil {
+		item.IndividualNotes = *input.IndividualNotes
+	}
+	if input.SerialNumber != nil {
+		item.SerialNumber = *input.SerialNumber
+	}
+	if input.ItemTypeID != nil {
+		item.ItemTypeID = input.ItemTypeID
+	}
+	if input.CategoryID != nil {
+		item.CategoryID = input.CategoryID
+	}
+	if input.ContainerID != nil {
+		item.ContainerID = input.ContainerID
+	}
+	if input.OriginLocationID != nil {
+		item.OriginLocationID = input.OriginLocationID
+	}
 
 	if err := h.DB.Save(&item).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item"})

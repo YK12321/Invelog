@@ -169,6 +169,27 @@ definitions:
       updated_at:
         type: string
     type: object
+  pkg_api_handlers.UpdateItemInput:
+    properties:
+      category_id:
+        type: string
+      container_id:
+        type: string
+      description:
+        type: string
+      individual_notes:
+        type: string
+      item_type_id:
+        type: string
+      name:
+        type: string
+      origin_location_id:
+        type: string
+      quantity:
+        type: integer
+      serial_number:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -718,12 +739,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Item Data
+      - description: Item Update Data
         in: body
         name: item
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Item'
+          $ref: '#/definitions/pkg_api_handlers.UpdateItemInput'
       produces:
       - application/json
       responses:
