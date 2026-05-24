@@ -15,15 +15,20 @@ import (
 // @Tags Categories
 // @Accept json
 // @Produce json
-// @Param category body models.Category true "Category Data"
+// @Param category body dto.CreateCategoryRequest true "Category Data"
 // @Success 201 {object} models.Category
 // @Failure 400 {object} map[string]string
 // @Router /categories [post]
 func (h *Handler) CreateCategory(c *gin.Context) {
-	var category models.Category
-	if err := c.ShouldBindJSON(&category); err != nil {
+	var req dto.CreateCategoryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	category := models.Category{
+		Name:        req.Name,
+		Description: req.Description,
 	}
 
 	if err := h.DB.Create(&category).Error; err != nil {

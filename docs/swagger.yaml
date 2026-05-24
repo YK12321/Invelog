@@ -1,5 +1,14 @@
 basePath: /api/v1
 definitions:
+  invelog_pkg_dto.CreateCategoryRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
   invelog_pkg_dto.CreateItemRequest:
     properties:
       category_id:
@@ -282,7 +291,7 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Category'
+          $ref: '#/definitions/invelog_pkg_dto.CreateCategoryRequest'
       produces:
       - application/json
       responses:

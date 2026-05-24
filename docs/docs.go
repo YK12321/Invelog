@@ -102,7 +102,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Category"
+                            "$ref": "#/definitions/invelog_pkg_dto.CreateCategoryRequest"
                         }
                     }
                 ],
@@ -1503,6 +1503,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "invelog_pkg_dto.CreateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "invelog_pkg_dto.CreateItemRequest": {
             "type": "object",
             "properties": {
