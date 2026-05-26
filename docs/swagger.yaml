@@ -683,6 +683,15 @@ paths:
   /items:
     get:
       description: Get all items
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
