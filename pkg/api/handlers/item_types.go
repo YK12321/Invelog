@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -15,15 +16,24 @@ import (
 // @Tags ItemTypes
 // @Accept json
 // @Produce json
-// @Param itemType body models.ItemType true "ItemType Data"
+// @Param itemType body dto.CreateItemTypeRequest true "ItemType Data"
 // @Success 201 {object} models.ItemType
 // @Failure 400 {object} map[string]string
 // @Router /item-types [post]
 func (h *Handler) CreateItemType(c *gin.Context) {
-	var itemType models.ItemType
-	if err := c.ShouldBindJSON(&itemType); err != nil {
+	var req dto.CreateItemTypeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	itemType := models.ItemType{
+		Name:           req.Name,
+		Description:    req.Description,
+		Specifications: req.Specifications,
+		Manufacturer:   req.Manufacturer,
+		PartNumber:     req.PartNumber,
+		CategoryID:     req.CategoryID,
 	}
 
 	if err := h.DB.Create(&itemType).Error; err != nil {
@@ -95,7 +105,7 @@ func (h *Handler) GetItemType(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "ItemType ID"
-// @Param itemType body models.ItemType true "ItemType Data"
+// @Param itemType body dto.UpdateItemTypeInput true "ItemType Data"
 // @Success 200 {object} models.ItemType
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -113,11 +123,30 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&itemType); err != nil {
+	var input dto.UpdateItemTypeInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	itemType.ID = id // Ensure ID cannot be changed
+
+	if input.Name != nil {
+		itemType.Name = *input.Name
+	}
+	if input.Description != nil {
+		itemType.Description = *input.Description
+	}
+	if input.Specifications != nil {
+		itemType.Specifications = *input.Specifications
+	}
+	if input.Manufacturer != nil {
+		itemType.Manufacturer = *input.Manufacturer
+	}
+	if input.PartNumber != nil {
+		itemType.PartNumber = *input.PartNumber
+	}
+	if input.CategoryID != nil {
+		itemType.CategoryID = input.CategoryID
+	}
 
 	if err := h.DB.Save(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item type"})
