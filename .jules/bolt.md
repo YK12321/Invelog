@@ -1,0 +1,3 @@
+## 2026-05-30 - Pagination limits on unbounded endpoints
+**Learning:** Returning all items in a list without limitations (e.g. `Find(&items)`) will eventually lead to major performance bottlenecks, N+1 loading latency, and excessive memory utilization as tables grow.
+**Action:** When retrofitting pagination on legacy/unbounded endpoints without breaking existing clients, use a high default limit (e.g., 1000) and a maximum cap, applying `.Limit(limit).Offset(offset)`. Preserve the original JSON array response body and include total count/pagination metadata in the HTTP headers (`X-Total-Count`, `X-Limit`, `X-Offset`).
