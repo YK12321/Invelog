@@ -1292,7 +1292,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/invelog_pkg_dto.CreateProjectRequest"
                         }
                     }
                 ],
@@ -1378,7 +1378,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/invelog_pkg_dto.UpdateProjectRequest"
                         }
                     }
                 ],
@@ -1535,6 +1535,23 @@ const docTemplate = `{
                 }
             }
         },
+        "invelog_pkg_dto.CreateProjectRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "invelog_pkg_dto.UpdateCategoryInput": {
             "type": "object",
             "properties": {
@@ -1542,6 +1559,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "invelog_pkg_dto.UpdateProjectRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

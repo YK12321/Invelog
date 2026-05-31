@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -14,15 +15,21 @@ import (
 // @Tags Projects
 // @Accept json
 // @Produce json
-// @Param project body models.Project true "Project Data"
+// @Param project body dto.CreateProjectRequest true "Project Data"
 // @Success 201 {object} models.Project
 // @Failure 400 {object} map[string]string
 // @Router /projects [post]
 func (h *Handler) CreateProject(c *gin.Context) {
-	var project models.Project
-	if err := c.ShouldBindJSON(&project); err != nil {
+	var req dto.CreateProjectRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	project := models.Project{
+		Name:        req.Name,
+		Description: req.Description,
+		Status:      req.Status,
 	}
 
 	if err := h.DB.Create(&project).Error; err != nil {
@@ -76,7 +83,7 @@ func (h *Handler) GetProject(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Project ID"
-// @Param project body models.Project true "Project Data"
+// @Param project body dto.UpdateProjectRequest true "Project Data"
 // @Success 200 {object} models.Project
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -94,11 +101,21 @@ func (h *Handler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&project); err != nil {
+	var input dto.UpdateProjectRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	project.ID = id // Ensure ID cannot be changed
+
+	if input.Name != nil {
+		project.Name = *input.Name
+	}
+	if input.Description != nil {
+		project.Description = *input.Description
+	}
+	if input.Status != nil {
+		project.Status = *input.Status
+	}
 
 	if err := h.DB.Save(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})

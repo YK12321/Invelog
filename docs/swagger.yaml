@@ -21,11 +21,31 @@ definitions:
       serial_number:
         type: string
     type: object
+  invelog_pkg_dto.CreateProjectRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+    required:
+    - name
+    type: object
   invelog_pkg_dto.UpdateCategoryInput:
     properties:
       description:
         type: string
       name:
+        type: string
+    type: object
+  invelog_pkg_dto.UpdateProjectRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
         type: string
     type: object
   invelog_pkg_models.ActivityLog:
@@ -1071,7 +1091,7 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Project'
+          $ref: '#/definitions/invelog_pkg_dto.CreateProjectRequest'
       produces:
       - application/json
       responses:
@@ -1156,7 +1176,7 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Project'
+          $ref: '#/definitions/invelog_pkg_dto.UpdateProjectRequest'
       produces:
       - application/json
       responses:
