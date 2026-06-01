@@ -21,11 +21,41 @@ definitions:
       serial_number:
         type: string
     type: object
+  invelog_pkg_dto.CreateItemTypeRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      manufacturer:
+        type: string
+      name:
+        type: string
+      part_number:
+        type: string
+      specifications:
+        type: string
+    type: object
   invelog_pkg_dto.UpdateCategoryInput:
     properties:
       description:
         type: string
       name:
+        type: string
+    type: object
+  invelog_pkg_dto.UpdateItemTypeInput:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      manufacturer:
+        type: string
+      name:
+        type: string
+      part_number:
+        type: string
+      specifications:
         type: string
     type: object
   invelog_pkg_models.ActivityLog:
@@ -572,7 +602,7 @@ paths:
         name: itemType
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.ItemType'
+          $ref: '#/definitions/invelog_pkg_dto.CreateItemTypeRequest'
       produces:
       - application/json
       responses:
@@ -657,7 +687,7 @@ paths:
         name: itemType
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.ItemType'
+          $ref: '#/definitions/invelog_pkg_dto.UpdateItemTypeInput'
       produces:
       - application/json
       responses:

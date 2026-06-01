@@ -541,7 +541,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/invelog_pkg_dto.CreateItemTypeRequest"
                         }
                     }
                 ],
@@ -627,7 +627,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/invelog_pkg_dto.UpdateItemTypeInput"
                         }
                     }
                 ],
@@ -1535,6 +1535,29 @@ const docTemplate = `{
                 }
             }
         },
+        "invelog_pkg_dto.CreateItemTypeRequest": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "part_number": {
+                    "type": "string"
+                },
+                "specifications": {
+                    "type": "string"
+                }
+            }
+        },
         "invelog_pkg_dto.UpdateCategoryInput": {
             "type": "object",
             "properties": {
@@ -1542,6 +1565,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "invelog_pkg_dto.UpdateItemTypeInput": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "part_number": {
+                    "type": "string"
+                },
+                "specifications": {
                     "type": "string"
                 }
             }
