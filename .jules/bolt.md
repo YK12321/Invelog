@@ -1,0 +1,3 @@
+## 2026-06-01 - Add pagination to unbounded ListItems endpoint
+**Learning:** Retrofitting pagination onto previously unbounded `Find()` list endpoints is critical to prevent OOM errors and excessive database load. However, doing so can break existing API clients that expect an unpaginated array structure.
+**Action:** Always provide pagination using `limit` and `offset` query parameters with large, safe defaults (e.g., `limit=1000`, `max=10000`). To preserve backward compatibility, avoid wrapping the JSON array in a new `{data: [...], meta: {...}}` structure and instead return pagination metadata via HTTP headers (`X-Total-Count`, `X-Limit`, `X-Offset`).
