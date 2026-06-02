@@ -129,26 +129,38 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 		return
 	}
 
+	updates := map[string]interface{}{}
 	if input.Name != nil {
+		updates["name"] = *input.Name
 		itemType.Name = *input.Name
 	}
 	if input.Description != nil {
+		updates["description"] = *input.Description
 		itemType.Description = *input.Description
 	}
 	if input.Specifications != nil {
+		updates["specifications"] = *input.Specifications
 		itemType.Specifications = *input.Specifications
 	}
 	if input.Manufacturer != nil {
+		updates["manufacturer"] = *input.Manufacturer
 		itemType.Manufacturer = *input.Manufacturer
 	}
 	if input.PartNumber != nil {
+		updates["part_number"] = *input.PartNumber
 		itemType.PartNumber = *input.PartNumber
 	}
 	if input.CategoryID != nil {
+		updates["category_id"] = input.CategoryID
 		itemType.CategoryID = input.CategoryID
 	}
 
-	if err := h.DB.Save(&itemType).Error; err != nil {
+	if len(updates) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No fields to update"})
+		return
+	}
+
+	if err := h.DB.Model(&itemType).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item type"})
 		return
 	}
