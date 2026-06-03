@@ -303,7 +303,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Container"
+                            "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
                         }
                     }
                 ],
@@ -1503,6 +1503,29 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "invelog_pkg_dto.CreateContainerRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "location_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                }
+            }
+        },
         "invelog_pkg_dto.CreateItemRequest": {
             "type": "object",
             "properties": {
