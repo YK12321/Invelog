@@ -55,7 +55,8 @@ func (h *Handler) CreateItem(c *gin.Context) {
 }
 
 // @Summary List Items
-// @Description Get all items
+// @Summary List Items
+// @Description Get items (paginated)
 // @Tags Items
 // @Produce json
 // @Param limit query int false "Limit (default 1000, max 10000)"
