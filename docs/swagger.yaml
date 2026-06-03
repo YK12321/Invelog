@@ -1,6 +1,25 @@
 basePath: /api/v1
 definitions:
+<<<<<<< bolt-performance-pagination-items-17337018210979591320
   dto.CreateItemRequest:
+=======
+  invelog_pkg_dto.CreateContainerRequest:
+    properties:
+      description:
+        type: string
+      location_id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      project_id:
+        type: string
+    required:
+    - name
+    type: object
+  invelog_pkg_dto.CreateItemRequest:
+>>>>>>> main
     properties:
       category_id:
         type: string
@@ -415,7 +434,11 @@ paths:
         name: container
         required: true
         schema:
+<<<<<<< bolt-performance-pagination-items-17337018210979591320
           $ref: '#/definitions/models.Container'
+=======
+          $ref: '#/definitions/invelog_pkg_dto.CreateContainerRequest'
+>>>>>>> main
       produces:
       - application/json
       responses:

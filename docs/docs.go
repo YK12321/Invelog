@@ -304,6 +304,7 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.Container"
+                            "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
                         }
                     }
                 ],
@@ -1518,6 +1519,30 @@ const docTemplate = `{
     },
     "definitions": {
         "dto.CreateItemRequest": {
+        "invelog_pkg_dto.CreateContainerRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "location_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "invelog_pkg_dto.CreateItemRequest": {
             "type": "object",
             "properties": {
                 "category_id": {

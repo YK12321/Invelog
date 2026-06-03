@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -14,15 +15,23 @@ import (
 // @Tags Containers
 // @Accept json
 // @Produce json
-// @Param container body models.Container true "Container Data"
+// @Param container body dto.CreateContainerRequest true "Container Data"
 // @Success 201 {object} models.Container
 // @Failure 400 {object} map[string]string
 // @Router /containers [post]
 func (h *Handler) CreateContainer(c *gin.Context) {
-	var container models.Container
-	if err := c.ShouldBindJSON(&container); err != nil {
+	var req dto.CreateContainerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	container := models.Container{
+		Name:        req.Name,
+		Description: req.Description,
+		LocationID:  req.LocationID,
+		ParentID:    req.ParentID,
+		ProjectID:   req.ProjectID,
 	}
 
 	if err := h.DB.Create(&container).Error; err != nil {
@@ -99,6 +108,11 @@ func (h *Handler) UpdateContainer(c *gin.Context) {
 		return
 	}
 	container.ID = id // Ensure ID cannot be changed
+
+	// Prevent mass assignment of associations
+	container.Location = nil
+	container.Parent = nil
+	container.Project = nil
 
 	if err := h.DB.Save(&container).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update container"})
