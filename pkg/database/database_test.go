@@ -6,8 +6,8 @@ import (
 
 func TestConnectEmptyDatabaseName(t *testing.T) {
 	tests := []struct {
-		name   string
-		dbType string
+		name     string
+		dbType   string
 	}{
 		{"SQLite Empty DB Name", "sqlite"},
 		{"Postgres Empty DB Name", "postgres"},
