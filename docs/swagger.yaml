@@ -1,5 +1,20 @@
 basePath: /api/v1
 definitions:
+  invelog_pkg_dto.CreateContainerRequest:
+    properties:
+      description:
+        type: string
+      location_id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      project_id:
+        type: string
+    required:
+    - name
+    type: object
   invelog_pkg_dto.CreateItemRequest:
     properties:
       category_id:
@@ -415,7 +430,7 @@ paths:
         name: container
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Container'
+          $ref: '#/definitions/invelog_pkg_dto.CreateContainerRequest'
       produces:
       - application/json
       responses:
