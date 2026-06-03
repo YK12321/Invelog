@@ -91,12 +91,15 @@ func (h *Handler) ListItems(c *gin.Context) {
 	var items []models.Item
 	var total int64
 
-	h.DB.Model(&models.Item{}).Count(&total)
+	if err := h.DB.Model(&models.Item{}).Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list items"})
+		return
+	}
 
-	h.DB.Preload("Category").Preload("Container").
-		Limit(limit).
-		Offset(offset).
-		Find(&items)
+	if err := h.DB.Preload("Category").Preload("Container").Order("created_at desc").Limit(limit).Offset(offset).Find(&items).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list items"})
+		return
+	}
 
 	response := models.PaginatedResponse[models.Item]{
 		Items:  items,
