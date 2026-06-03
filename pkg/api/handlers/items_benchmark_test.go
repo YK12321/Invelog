@@ -13,27 +13,31 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func setupBenchmarkDB() *gorm.DB {
+func setupBenchmarkDB(b *testing.B) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
-		panic(err)
+		b.Fatalf("failed to open benchmark database: %v", err)
 	}
-	db.AutoMigrate(&models.Item{}, &models.Category{}, &models.Container{})
+	if err := db.AutoMigrate(&models.Item{}, &models.Category{}, &models.Container{}); err != nil {
+		b.Fatalf("failed to migrate benchmark database: %v", err)
+	}
 
 	// Insert 1500 items to see the pagination effect (default limit 1000)
-	var items []models.Item
-	for i := 0; i < 1500; i++ {
-		items = append(items, models.Item{Name: "Test Item", Quantity: 1})
+	items := make([]models.Item, 1500)
+	for i := range items {
+		items[i] = models.Item{Name: "Test Item", Quantity: 1}
 	}
-	db.Create(&items)
+	if err := db.Create(&items).Error; err != nil {
+		b.Fatalf("failed to seed benchmark items: %v", err)
+	}
 	return db
 }
 
 func BenchmarkListItems(b *testing.B) {
 	gin.SetMode(gin.ReleaseMode)
-	db := setupBenchmarkDB()
+	db := setupBenchmarkDB(b)
 	handler := &Handler{DB: db}
 
 	router := gin.New()
