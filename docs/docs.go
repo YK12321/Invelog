@@ -54,7 +54,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.ActivityLog"
+                                "$ref": "#/definitions/models.ActivityLog"
                             }
                         }
                     }
@@ -77,7 +77,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Category"
+                                "$ref": "#/definitions/models.Category"
                             }
                         }
                     }
@@ -102,7 +102,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Category"
+                            "$ref": "#/definitions/models.Category"
                         }
                     }
                 ],
@@ -110,7 +110,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Category"
+                            "$ref": "#/definitions/models.Category"
                         }
                     },
                     "400": {
@@ -148,7 +148,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Category"
+                            "$ref": "#/definitions/models.Category"
                         }
                     },
                     "404": {
@@ -188,7 +188,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_dto.UpdateCategoryInput"
+                            "$ref": "#/definitions/dto.UpdateCategoryInput"
                         }
                     }
                 ],
@@ -196,7 +196,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Category"
+                            "$ref": "#/definitions/models.Category"
                         }
                     },
                     "400": {
@@ -278,7 +278,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Container"
+                                "$ref": "#/definitions/models.Container"
                             }
                         }
                     }
@@ -303,6 +303,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
+                            "$ref": "#/definitions/models.Container"
                             "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
                         }
                     }
@@ -311,7 +312,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Container"
+                            "$ref": "#/definitions/models.Container"
                         }
                     },
                     "400": {
@@ -349,7 +350,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Container"
+                            "$ref": "#/definitions/models.Container"
                         }
                     },
                     "404": {
@@ -389,7 +390,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Container"
+                            "$ref": "#/definitions/models.Container"
                         }
                     }
                 ],
@@ -397,7 +398,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Container"
+                            "$ref": "#/definitions/models.Container"
                         }
                     },
                     "400": {
@@ -516,7 +517,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                                "$ref": "#/definitions/models.ItemType"
                             }
                         }
                     }
@@ -541,7 +542,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/models.ItemType"
                         }
                     }
                 ],
@@ -549,7 +550,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/models.ItemType"
                         }
                     },
                     "400": {
@@ -587,7 +588,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/models.ItemType"
                         }
                     },
                     "404": {
@@ -627,7 +628,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/models.ItemType"
                         }
                     }
                 ],
@@ -635,7 +636,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                            "$ref": "#/definitions/models.ItemType"
                         }
                     },
                     "400": {
@@ -711,13 +712,27 @@ const docTemplate = `{
                     "Items"
                 ],
                 "summary": "List Items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Item"
+                                "$ref": "#/definitions/models.Item"
                             }
                         }
                     }
@@ -742,7 +757,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_dto.CreateItemRequest"
+                            "$ref": "#/definitions/dto.CreateItemRequest"
                         }
                     }
                 ],
@@ -750,7 +765,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/models.Item"
                         }
                     },
                     "400": {
@@ -788,7 +803,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/models.Item"
                         }
                     },
                     "404": {
@@ -828,7 +843,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/pkg_api_handlers.UpdateItemInput"
+                            "$ref": "#/definitions/handlers.UpdateItemInput"
                         }
                     }
                 ],
@@ -836,7 +851,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/models.Item"
                         }
                     },
                     "400": {
@@ -925,7 +940,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/models.Item"
                         }
                     },
                     "400": {
@@ -972,7 +987,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/models.Item"
                         }
                     },
                     "400": {
@@ -1026,7 +1041,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Item"
+                            "$ref": "#/definitions/models.Item"
                         }
                     },
                     "400": {
@@ -1066,7 +1081,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Location"
+                                "$ref": "#/definitions/models.Location"
                             }
                         }
                     }
@@ -1091,7 +1106,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Location"
+                            "$ref": "#/definitions/models.Location"
                         }
                     }
                 ],
@@ -1099,7 +1114,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Location"
+                            "$ref": "#/definitions/models.Location"
                         }
                     },
                     "400": {
@@ -1137,7 +1152,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Location"
+                            "$ref": "#/definitions/models.Location"
                         }
                     },
                     "404": {
@@ -1177,7 +1192,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Location"
+                            "$ref": "#/definitions/models.Location"
                         }
                     }
                 ],
@@ -1185,7 +1200,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Location"
+                            "$ref": "#/definitions/models.Location"
                         }
                     },
                     "400": {
@@ -1267,7 +1282,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Project"
+                                "$ref": "#/definitions/models.Project"
                             }
                         }
                     }
@@ -1292,7 +1307,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/models.Project"
                         }
                     }
                 ],
@@ -1300,7 +1315,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/models.Project"
                         }
                     },
                     "400": {
@@ -1338,7 +1353,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/models.Project"
                         }
                     },
                     "404": {
@@ -1378,7 +1393,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/models.Project"
                         }
                     }
                 ],
@@ -1386,7 +1401,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/invelog_pkg_models.Project"
+                            "$ref": "#/definitions/models.Project"
                         }
                     },
                     "400": {
@@ -1494,7 +1509,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/invelog_pkg_models.Item"
+                                "$ref": "#/definitions/models.Item"
                             }
                         }
                     }
@@ -1503,6 +1518,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CreateItemRequest": {
         "invelog_pkg_dto.CreateContainerRequest": {
             "type": "object",
             "required": [
@@ -1558,7 +1574,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_dto.UpdateCategoryInput": {
+        "dto.UpdateCategoryInput": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1569,7 +1585,39 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.ActivityLog": {
+        "handlers.UpdateItemInput": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "container_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "individual_notes": {
+                    "type": "string"
+                },
+                "item_type_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "origin_location_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "serial_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityLog": {
             "type": "object",
             "properties": {
                 "action": {
@@ -1590,7 +1638,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "from_container": {
-                    "$ref": "#/definitions/invelog_pkg_models.Container"
+                    "$ref": "#/definitions/models.Container"
                 },
                 "from_container_id": {
                     "type": "string"
@@ -1599,7 +1647,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "project": {
-                    "$ref": "#/definitions/invelog_pkg_models.Project"
+                    "$ref": "#/definitions/models.Project"
                 },
                 "project_id": {
                     "type": "string"
@@ -1608,7 +1656,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "to_container": {
-                    "$ref": "#/definitions/invelog_pkg_models.Container"
+                    "$ref": "#/definitions/models.Container"
                 },
                 "to_container_id": {
                     "type": "string"
@@ -1622,7 +1670,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.Category": {
+        "models.Category": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1642,7 +1690,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.Container": {
+        "models.Container": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1655,7 +1703,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "location": {
-                    "$ref": "#/definitions/invelog_pkg_models.Location"
+                    "$ref": "#/definitions/models.Location"
                 },
                 "location_id": {
                     "type": "string"
@@ -1664,13 +1712,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "parent": {
-                    "$ref": "#/definitions/invelog_pkg_models.Container"
+                    "$ref": "#/definitions/models.Container"
                 },
                 "parent_id": {
                     "type": "string"
                 },
                 "project": {
-                    "$ref": "#/definitions/invelog_pkg_models.Project"
+                    "$ref": "#/definitions/models.Project"
                 },
                 "project_id": {
                     "type": "string"
@@ -1680,11 +1728,11 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.Item": {
+        "models.Item": {
             "type": "object",
             "properties": {
                 "category": {
-                    "$ref": "#/definitions/invelog_pkg_models.Category"
+                    "$ref": "#/definitions/models.Category"
                 },
                 "category_id": {
                     "type": "string"
@@ -1693,7 +1741,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "container": {
-                    "$ref": "#/definitions/invelog_pkg_models.Container"
+                    "$ref": "#/definitions/models.Container"
                 },
                 "container_id": {
                     "type": "string"
@@ -1714,7 +1762,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "item_type": {
-                    "$ref": "#/definitions/invelog_pkg_models.ItemType"
+                    "$ref": "#/definitions/models.ItemType"
                 },
                 "item_type_id": {
                     "type": "string"
@@ -1727,7 +1775,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "origin_location": {
-                    "$ref": "#/definitions/invelog_pkg_models.Location"
+                    "$ref": "#/definitions/models.Location"
                 },
                 "origin_location_id": {
                     "type": "string"
@@ -1743,11 +1791,11 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.ItemType": {
+        "models.ItemType": {
             "type": "object",
             "properties": {
                 "category": {
-                    "$ref": "#/definitions/invelog_pkg_models.Category"
+                    "$ref": "#/definitions/models.Category"
                 },
                 "category_id": {
                     "type": "string"
@@ -1778,7 +1826,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.Location": {
+        "models.Location": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1798,7 +1846,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_models.Project": {
+        "models.Project": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1818,38 +1866,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "pkg_api_handlers.UpdateItemInput": {
-            "type": "object",
-            "properties": {
-                "category_id": {
-                    "type": "string"
-                },
-                "container_id": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "individual_notes": {
-                    "type": "string"
-                },
-                "item_type_id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "origin_location_id": {
-                    "type": "string"
-                },
-                "quantity": {
-                    "type": "integer"
-                },
-                "serial_number": {
                     "type": "string"
                 }
             }

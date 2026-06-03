@@ -1,5 +1,8 @@
 basePath: /api/v1
 definitions:
+<<<<<<< bolt-performance-pagination-items-17337018210979591320
+  dto.CreateItemRequest:
+=======
   invelog_pkg_dto.CreateContainerRequest:
     properties:
       description:
@@ -16,6 +19,7 @@ definitions:
     - name
     type: object
   invelog_pkg_dto.CreateItemRequest:
+>>>>>>> main
     properties:
       category_id:
         type: string
@@ -36,14 +40,35 @@ definitions:
       serial_number:
         type: string
     type: object
-  invelog_pkg_dto.UpdateCategoryInput:
+  dto.UpdateCategoryInput:
     properties:
       description:
         type: string
       name:
         type: string
     type: object
-  invelog_pkg_models.ActivityLog:
+  handlers.UpdateItemInput:
+    properties:
+      category_id:
+        type: string
+      container_id:
+        type: string
+      description:
+        type: string
+      individual_notes:
+        type: string
+      item_type_id:
+        type: string
+      name:
+        type: string
+      origin_location_id:
+        type: string
+      quantity:
+        type: integer
+      serial_number:
+        type: string
+    type: object
+  models.ActivityLog:
     properties:
       action:
         description: e.g., "CREATED", "MODIFIED", "DELETED", "MOVED", "CHECK_IN",
@@ -59,19 +84,19 @@ definitions:
         description: e.g., "Item", "Container", "Location"
         type: string
       from_container:
-        $ref: '#/definitions/invelog_pkg_models.Container'
+        $ref: '#/definitions/models.Container'
       from_container_id:
         type: string
       id:
         type: string
       project:
-        $ref: '#/definitions/invelog_pkg_models.Project'
+        $ref: '#/definitions/models.Project'
       project_id:
         type: string
       quantity_change:
         type: integer
       to_container:
-        $ref: '#/definitions/invelog_pkg_models.Container'
+        $ref: '#/definitions/models.Container'
       to_container_id:
         type: string
       updated_at:
@@ -80,7 +105,7 @@ definitions:
         description: 'Optional: If we ever add users'
         type: string
     type: object
-  invelog_pkg_models.Category:
+  models.Category:
     properties:
       created_at:
         type: string
@@ -93,7 +118,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  invelog_pkg_models.Container:
+  models.Container:
     properties:
       created_at:
         type: string
@@ -102,32 +127,32 @@ definitions:
       id:
         type: string
       location:
-        $ref: '#/definitions/invelog_pkg_models.Location'
+        $ref: '#/definitions/models.Location'
       location_id:
         type: string
       name:
         type: string
       parent:
-        $ref: '#/definitions/invelog_pkg_models.Container'
+        $ref: '#/definitions/models.Container'
       parent_id:
         type: string
       project:
-        $ref: '#/definitions/invelog_pkg_models.Project'
+        $ref: '#/definitions/models.Project'
       project_id:
         type: string
       updated_at:
         type: string
     type: object
-  invelog_pkg_models.Item:
+  models.Item:
     properties:
       category:
-        $ref: '#/definitions/invelog_pkg_models.Category'
+        $ref: '#/definitions/models.Category'
       category_id:
         type: string
       checked_out:
         type: boolean
       container:
-        $ref: '#/definitions/invelog_pkg_models.Container'
+        $ref: '#/definitions/models.Container'
       container_id:
         type: string
       created_at:
@@ -141,7 +166,7 @@ definitions:
       individual_notes:
         type: string
       item_type:
-        $ref: '#/definitions/invelog_pkg_models.ItemType'
+        $ref: '#/definitions/models.ItemType'
       item_type_id:
         type: string
       last_check_out_time:
@@ -150,7 +175,7 @@ definitions:
         description: Used if ItemType is not provided
         type: string
       origin_location:
-        $ref: '#/definitions/invelog_pkg_models.Location'
+        $ref: '#/definitions/models.Location'
       origin_location_id:
         type: string
       quantity:
@@ -160,10 +185,10 @@ definitions:
       updated_at:
         type: string
     type: object
-  invelog_pkg_models.ItemType:
+  models.ItemType:
     properties:
       category:
-        $ref: '#/definitions/invelog_pkg_models.Category'
+        $ref: '#/definitions/models.Category'
       category_id:
         type: string
       created_at:
@@ -183,7 +208,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  invelog_pkg_models.Location:
+  models.Location:
     properties:
       created_at:
         type: string
@@ -196,7 +221,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  invelog_pkg_models.Project:
+  models.Project:
     properties:
       created_at:
         type: string
@@ -210,27 +235,6 @@ definitions:
         description: e.g., "active", "completed", "archived"
         type: string
       updated_at:
-        type: string
-    type: object
-  pkg_api_handlers.UpdateItemInput:
-    properties:
-      category_id:
-        type: string
-      container_id:
-        type: string
-      description:
-        type: string
-      individual_notes:
-        type: string
-      item_type_id:
-        type: string
-      name:
-        type: string
-      origin_location_id:
-        type: string
-      quantity:
-        type: integer
-      serial_number:
         type: string
     type: object
 host: localhost:8080
@@ -267,7 +271,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.ActivityLog'
+              $ref: '#/definitions/models.ActivityLog'
             type: array
       summary: List Activity Logs
       tags:
@@ -282,7 +286,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.Category'
+              $ref: '#/definitions/models.Category'
             type: array
       summary: List Categories
       tags:
@@ -297,14 +301,14 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Category'
+          $ref: '#/definitions/models.Category'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Category'
+            $ref: '#/definitions/models.Category'
         "400":
           description: Bad Request
           schema:
@@ -357,7 +361,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Category'
+            $ref: '#/definitions/models.Category'
         "404":
           description: Not Found
           schema:
@@ -382,14 +386,14 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_dto.UpdateCategoryInput'
+          $ref: '#/definitions/dto.UpdateCategoryInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Category'
+            $ref: '#/definitions/models.Category'
         "400":
           description: Bad Request
           schema:
@@ -415,7 +419,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.Container'
+              $ref: '#/definitions/models.Container'
             type: array
       summary: List Containers
       tags:
@@ -430,14 +434,18 @@ paths:
         name: container
         required: true
         schema:
+<<<<<<< bolt-performance-pagination-items-17337018210979591320
+          $ref: '#/definitions/models.Container'
+=======
           $ref: '#/definitions/invelog_pkg_dto.CreateContainerRequest'
+>>>>>>> main
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Container'
+            $ref: '#/definitions/models.Container'
         "400":
           description: Bad Request
           schema:
@@ -490,7 +498,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Container'
+            $ref: '#/definitions/models.Container'
         "404":
           description: Not Found
           schema:
@@ -515,14 +523,14 @@ paths:
         name: container
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Container'
+          $ref: '#/definitions/models.Container'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Container'
+            $ref: '#/definitions/models.Container'
         "400":
           description: Bad Request
           schema:
@@ -572,7 +580,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.ItemType'
+              $ref: '#/definitions/models.ItemType'
             type: array
       summary: List ItemTypes
       tags:
@@ -587,14 +595,14 @@ paths:
         name: itemType
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.ItemType'
+          $ref: '#/definitions/models.ItemType'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/invelog_pkg_models.ItemType'
+            $ref: '#/definitions/models.ItemType'
         "400":
           description: Bad Request
           schema:
@@ -647,7 +655,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.ItemType'
+            $ref: '#/definitions/models.ItemType'
         "404":
           description: Not Found
           schema:
@@ -672,14 +680,14 @@ paths:
         name: itemType
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.ItemType'
+          $ref: '#/definitions/models.ItemType'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.ItemType'
+            $ref: '#/definitions/models.ItemType'
         "400":
           description: Bad Request
           schema:
@@ -698,6 +706,15 @@ paths:
   /items:
     get:
       description: Get all items
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -705,7 +722,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.Item'
+              $ref: '#/definitions/models.Item'
             type: array
       summary: List Items
       tags:
@@ -720,14 +737,14 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_dto.CreateItemRequest'
+          $ref: '#/definitions/dto.CreateItemRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Item'
+            $ref: '#/definitions/models.Item'
         "400":
           description: Bad Request
           schema:
@@ -780,7 +797,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Item'
+            $ref: '#/definitions/models.Item'
         "404":
           description: Not Found
           schema:
@@ -805,14 +822,14 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/pkg_api_handlers.UpdateItemInput'
+          $ref: '#/definitions/handlers.UpdateItemInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Item'
+            $ref: '#/definitions/models.Item'
         "400":
           description: Bad Request
           schema:
@@ -844,7 +861,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Item'
+            $ref: '#/definitions/models.Item'
         "400":
           description: Bad Request
           schema:
@@ -876,7 +893,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Item'
+            $ref: '#/definitions/models.Item'
         "400":
           description: Bad Request
           schema:
@@ -912,7 +929,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Item'
+            $ref: '#/definitions/models.Item'
         "400":
           description: Bad Request
           schema:
@@ -938,7 +955,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.Location'
+              $ref: '#/definitions/models.Location'
             type: array
       summary: List Locations
       tags:
@@ -953,14 +970,14 @@ paths:
         name: location
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Location'
+          $ref: '#/definitions/models.Location'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Location'
+            $ref: '#/definitions/models.Location'
         "400":
           description: Bad Request
           schema:
@@ -1013,7 +1030,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Location'
+            $ref: '#/definitions/models.Location'
         "404":
           description: Not Found
           schema:
@@ -1038,14 +1055,14 @@ paths:
         name: location
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Location'
+          $ref: '#/definitions/models.Location'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Location'
+            $ref: '#/definitions/models.Location'
         "400":
           description: Bad Request
           schema:
@@ -1071,7 +1088,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.Project'
+              $ref: '#/definitions/models.Project'
             type: array
       summary: List Projects
       tags:
@@ -1086,14 +1103,14 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Project'
+          $ref: '#/definitions/models.Project'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Project'
+            $ref: '#/definitions/models.Project'
         "400":
           description: Bad Request
           schema:
@@ -1146,7 +1163,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Project'
+            $ref: '#/definitions/models.Project'
         "404":
           description: Not Found
           schema:
@@ -1171,14 +1188,14 @@ paths:
         name: project
         required: true
         schema:
-          $ref: '#/definitions/invelog_pkg_models.Project'
+          $ref: '#/definitions/models.Project'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/invelog_pkg_models.Project'
+            $ref: '#/definitions/models.Project'
         "400":
           description: Bad Request
           schema:
@@ -1221,7 +1238,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/invelog_pkg_models.Item'
+              $ref: '#/definitions/models.Item'
             type: array
       summary: Search Items
       tags:
