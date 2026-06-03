@@ -48,5 +48,9 @@ func BenchmarkListItems(b *testing.B) {
 		req, _ := http.NewRequest("GET", "/items", nil)
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			b.Fatalf("expected status 200, got %d", w.Code)
+		}
 	}
 }
