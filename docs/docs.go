@@ -711,6 +711,20 @@ const docTemplate = `{
                     "Items"
                 ],
                 "summary": "List Items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
