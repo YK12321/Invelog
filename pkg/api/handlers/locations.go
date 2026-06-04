@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"invelog/pkg/models"
 
@@ -35,14 +37,44 @@ func (h *Handler) CreateLocation(c *gin.Context) {
 }
 
 // @Summary List Locations
-// @Description Get all locations
+// @Description Get all locations (paginated)
 // @Tags Locations
 // @Produce json
+// @Param limit query int false "Limit (default 1000, max 10000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Location
 // @Router /locations [get]
 func (h *Handler) ListLocations(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "1000")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var locations []models.Location
-	h.DB.Find(&locations)
+	var total int64
+
+	h.DB.Model(&models.Location{}).Count(&total)
+
+	// Performance optimization: Avoid unbounded GORM Find() queries.
+	// Returning large unbounded collections without any Limit constraint can cause massive performance
+	// and memory issues. Using backward-compatible pagination improves performance.
+	h.DB.Limit(limit).Offset(offset).Find(&locations)
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, locations)
 }
 

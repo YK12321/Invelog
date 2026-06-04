@@ -1,9 +1,6 @@
 basePath: /api/v1
 definitions:
-<<<<<<< bolt-performance-pagination-items-17337018210979591320
-  dto.CreateItemRequest:
-=======
-  invelog_pkg_dto.CreateContainerRequest:
+  dto.CreateContainerRequest:
     properties:
       description:
         type: string
@@ -18,8 +15,7 @@ definitions:
     required:
     - name
     type: object
-  invelog_pkg_dto.CreateItemRequest:
->>>>>>> main
+  dto.CreateItemRequest:
     properties:
       category_id:
         type: string
@@ -278,7 +274,16 @@ paths:
       - Activity Logs
   /categories:
     get:
-      description: Get all categories
+      description: Get all categories (paginated)
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -411,7 +416,16 @@ paths:
       - Categories
   /containers:
     get:
-      description: Get all containers
+      description: Get all containers (paginated)
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -434,11 +448,7 @@ paths:
         name: container
         required: true
         schema:
-<<<<<<< bolt-performance-pagination-items-17337018210979591320
-          $ref: '#/definitions/models.Container'
-=======
-          $ref: '#/definitions/invelog_pkg_dto.CreateContainerRequest'
->>>>>>> main
+          $ref: '#/definitions/dto.CreateContainerRequest'
       produces:
       - application/json
       responses:
@@ -705,7 +715,7 @@ paths:
       - ItemTypes
   /items:
     get:
-      description: Get all items
+      description: Get items (paginated)
       parameters:
       - description: Limit (default 1000, max 10000)
         in: query
@@ -947,7 +957,16 @@ paths:
       - Items
   /locations:
     get:
-      description: Get all locations
+      description: Get all locations (paginated)
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -1080,7 +1099,16 @@ paths:
       - Locations
   /projects:
     get:
-      description: Get all projects
+      description: Get all projects (paginated)
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
