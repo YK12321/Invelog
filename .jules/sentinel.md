@@ -7,3 +7,8 @@
 **Vulnerability:** Several REST endpoints (e.g., `CreateContainer`, `UpdateContainer`) were directly binding incoming JSON payloads to GORM domain models (`models.Container`). When database configurations enable `FullSaveAssociations` (common when migrating from SQLite to Postgres or modifying defaults), this allows attackers to pass nested JSON objects (like `{"location": {"name": "Hacked"}}`) and perform unauthorized mass assignment/modifications on related database records.
 **Learning:** Directly binding HTTP requests to domain models that have relation mappings (like `Location`, `Project`, `Parent`) creates a dangerous mass assignment vector that might lay dormant until ORM settings or DB drivers are changed.
 **Prevention:** Always use dedicated Data Transfer Objects (DTOs) for request parsing (e.g., in `pkg/dto/`) that only expose primitive scalar fields (e.g., `LocationID` instead of a full `Location` object) and strictly defined allowed updateable fields, then map these explicitly to domain models before saving.
+
+## 2026-06-07 - [Hardcoded Database Credentials]
+**Vulnerability:** The application was using hardcoded default credentials ("postgres" / "postgres") for `DB_USER` and `DB_PASSWORD` when connecting to the database.
+**Learning:** Using hardcoded default credentials is a CRITICAL security vulnerability. It can expose databases if environment variables are not correctly configured in production.
+**Prevention:** Never use hardcoded secrets or default passwords in source code. Always enforce that credentials are provided externally via secure environment variables or a secrets manager.
