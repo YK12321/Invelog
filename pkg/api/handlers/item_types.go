@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -61,7 +62,17 @@ func (h *Handler) ListItemTypes(c *gin.Context) {
 	}
 
 	var itemTypes []models.ItemType
+	var total int64
+
+	// Get total count
+	h.DB.Model(&models.ItemType{}).Count(&total)
+
 	h.DB.Preload("Category").Limit(limit).Offset(offset).Find(&itemTypes)
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, itemTypes)
 }
 

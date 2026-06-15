@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"invelog/pkg/dto"
 	"invelog/pkg/models"
@@ -36,14 +38,42 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 }
 
 // @Summary List Categories
-// @Description Get all categories
+// @Description Get all categories (paginated)
 // @Tags Categories
 // @Produce json
+// @Param limit query int false "Limit (default 1000, max 10000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Category
 // @Router /categories [get]
 func (h *Handler) ListCategories(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "1000")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var categories []models.Category
-	h.DB.Find(&categories)
+	var total int64
+
+	// Get total count
+	h.DB.Model(&models.Category{}).Count(&total)
+
+	h.DB.Limit(limit).Offset(offset).Find(&categories)
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, categories)
 }
 
