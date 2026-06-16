@@ -1,3 +1,6 @@
 ## 2024-06-02 - ListItems pagination performance bottleneck
 **Learning:** Returning large unbounded collections from `GORM.Find()` calls without any `Limit` constraint can cause massive performance and memory issues, especially when paired with `.Preload()`. Using limits and offsets allows for controlled data fetching.
 **Action:** Always verify that endpoint logic correctly limits query results when working with list routes. For backward compatibility, make sure to use reasonable default boundaries (e.g. `1000`) and metadata headers (e.g., `X-Total-Count`).
+## 2026-06-16 - Prevent Unbounded Pagination on Associated Collections
+**Learning:** Returning unpaginated collections in list endpoints (like `/containers`) especially with `.Preload()` can cause severe performance issues including Out-Of-Memory errors and excessive database load.
+**Action:** Always implement pagination with `limit` and `offset` for list endpoints. Use headers (`X-Total-Count`, `X-Limit`, `X-Offset`) to return metadata while preserving the backward-compatible raw JSON array response body. Defaults should be high (e.g. 1000) for frequently accessed/synced entities.
