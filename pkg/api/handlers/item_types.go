@@ -119,6 +119,9 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 	}
 	itemType.ID = id // Ensure ID cannot be changed
 
+	// Prevent mass assignment of associations
+	itemType.Category = nil
+
 	if err := h.DB.Save(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item type"})
 		return
