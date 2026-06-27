@@ -109,7 +109,8 @@ func (h *Handler) UpdateContainer(c *gin.Context) {
 	}
 	container.ID = id // Ensure ID cannot be changed
 
-	// Prevent mass assignment of associations
+	// Security fix: Set relational struct pointers to nil to prevent mass assignment vulnerabilities
+	// when saving the model directly after binding JSON.
 	container.Location = nil
 	container.Parent = nil
 	container.Project = nil

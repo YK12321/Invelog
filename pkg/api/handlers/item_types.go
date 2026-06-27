@@ -119,6 +119,10 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 	}
 	itemType.ID = id // Ensure ID cannot be changed
 
+	// Security fix: Set relational struct pointers to nil to prevent mass assignment vulnerabilities
+	// when saving the model directly after binding JSON.
+	itemType.Category = nil
+
 	if err := h.DB.Save(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item type"})
 		return
