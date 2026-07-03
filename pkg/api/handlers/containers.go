@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"invelog/pkg/dto"
 	"invelog/pkg/models"
@@ -47,11 +49,44 @@ func (h *Handler) CreateContainer(c *gin.Context) {
 // @Description Get all containers
 // @Tags Containers
 // @Produce json
+// @Param limit query int false "Limit (default 1000, max 10000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Container
 // @Router /containers [get]
 func (h *Handler) ListContainers(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "1000")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var containers []models.Container
-	h.DB.Preload("Location").Preload("Parent").Preload("Project").Find(&containers)
+	var total int64
+
+	if err := h.DB.Model(&models.Container{}).Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count containers"})
+		return
+	}
+
+	if err := h.DB.Preload("Location").Preload("Parent").Preload("Project").Order("created_at desc").Limit(limit).Offset(offset).Find(&containers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list containers"})
+		return
+	}
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, containers)
 }
 
