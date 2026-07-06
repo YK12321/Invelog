@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"invelog/pkg/models"
@@ -17,9 +19,27 @@ import (
 // @Param category_id query string false "Filter by Category ID"
 // @Param container_id query string false "Filter by Container ID"
 // @Param project_id query string false "Filter by Project ID"
+// @Param limit query int false "Limit (default 100, max 1000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Item
 // @Router /search/items [get]
 func (h *Handler) SearchItems(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "100")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 100
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	query := h.DB.Model(&models.Item{}).
 		Preload("Category").
 		Preload("Container").
@@ -51,10 +71,24 @@ func (h *Handler) SearchItems(c *gin.Context) {
 	}
 
 	var items []models.Item
-	if err := query.Find(&items).Error; err != nil {
+	var total int64
+
+	// Get total count
+	if err := query.Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count search results"})
+		return
+	}
+
+	// Get paginated results
+	// ⚡ Bolt: Adding Limit and Offset with stable sort to avoid unbounded queries that cause performance regressions
+	if err := query.Order("items.created_at desc").Limit(limit).Offset(offset).Find(&items).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Search failed"})
 		return
 	}
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
 
 	c.JSON(http.StatusOK, items)
 }
