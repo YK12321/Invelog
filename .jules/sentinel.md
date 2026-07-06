@@ -7,3 +7,8 @@
 **Vulnerability:** Several REST endpoints (e.g., `CreateContainer`, `UpdateContainer`) were directly binding incoming JSON payloads to GORM domain models (`models.Container`). When database configurations enable `FullSaveAssociations` (common when migrating from SQLite to Postgres or modifying defaults), this allows attackers to pass nested JSON objects (like `{"location": {"name": "Hacked"}}`) and perform unauthorized mass assignment/modifications on related database records.
 **Learning:** Directly binding HTTP requests to domain models that have relation mappings (like `Location`, `Project`, `Parent`) creates a dangerous mass assignment vector that might lay dormant until ORM settings or DB drivers are changed.
 **Prevention:** Always use dedicated Data Transfer Objects (DTOs) for request parsing (e.g., in `pkg/dto/`) that only expose primitive scalar fields (e.g., `LocationID` instead of a full `Location` object) and strictly defined allowed updateable fields, then map these explicitly to domain models before saving.
+
+## 2024-07-06 - [Mass Assignment via GORM Associations in ItemType]
+**Vulnerability:** The `CreateItemType` and `UpdateItemType` REST endpoints directly bind incoming JSON to the `models.ItemType` domain model. This allows unauthorized updates to the nested `Category` relation when GORM creates/updates records, posing a mass assignment vulnerability.
+**Learning:** Always bind incoming payloads to distinct Data Transfer Objects (DTOs) for creation, and explicitly clear nested relation pointers (e.g. `itemType.Category = nil`) when updating via partial binding to prevent accidental association updates.
+**Prevention:** Use DTOs in `pkg/dto/` for creation, and set association pointers to `nil` before saving during updates.
