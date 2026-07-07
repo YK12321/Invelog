@@ -303,8 +303,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Container"
-                            "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
+                            "$ref": "#/definitions/dto.CreateContainerRequest"
                         }
                     }
                 ],
@@ -542,7 +541,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ItemType"
+                            "$ref": "#/definitions/dto.CreateItemTypeRequest"
                         }
                     }
                 ],
@@ -704,7 +703,7 @@ const docTemplate = `{
         },
         "/items": {
             "get": {
-                "description": "Get all items",
+                "description": "Get items (paginated)",
                 "produces": [
                     "application/json"
                 ],
@@ -1518,8 +1517,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateItemRequest": {
-        "invelog_pkg_dto.CreateContainerRequest": {
+        "dto.CreateContainerRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1542,7 +1540,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_dto.CreateItemRequest": {
+        "dto.CreateItemRequest": {
             "type": "object",
             "properties": {
                 "category_id": {
@@ -1570,6 +1568,29 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "serial_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateItemTypeRequest": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "part_number": {
+                    "type": "string"
+                },
+                "specifications": {
                     "type": "string"
                 }
             }
