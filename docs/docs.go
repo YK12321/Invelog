@@ -264,7 +264,7 @@ const docTemplate = `{
         },
         "/containers": {
             "get": {
-                "description": "Get all containers",
+                "description": "Get all containers (paginated)",
                 "produces": [
                     "application/json"
                 ],
@@ -272,6 +272,20 @@ const docTemplate = `{
                     "Containers"
                 ],
                 "summary": "List Containers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -303,8 +317,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Container"
-                            "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
+                            "$ref": "#/definitions/dto.CreateContainerRequest"
                         }
                     }
                 ],
@@ -704,7 +717,7 @@ const docTemplate = `{
         },
         "/items": {
             "get": {
-                "description": "Get all items",
+                "description": "Get items (paginated)",
                 "produces": [
                     "application/json"
                 ],
@@ -1518,8 +1531,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateItemRequest": {
-        "invelog_pkg_dto.CreateContainerRequest": {
+        "dto.CreateContainerRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1542,7 +1554,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_dto.CreateItemRequest": {
+        "dto.CreateItemRequest": {
             "type": "object",
             "properties": {
                 "category_id": {
