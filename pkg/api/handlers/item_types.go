@@ -26,6 +26,8 @@ func (h *Handler) CreateItemType(c *gin.Context) {
 		return
 	}
 
+	itemType.Category = nil
+
 	if err := h.DB.Create(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create item type"})
 		return
@@ -118,6 +120,8 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 		return
 	}
 	itemType.ID = id // Ensure ID cannot be changed
+
+	itemType.Category = nil
 
 	if err := h.DB.Save(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item type"})
