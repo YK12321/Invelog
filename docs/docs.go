@@ -71,6 +71,20 @@ const docTemplate = `{
                     "Categories"
                 ],
                 "summary": "List Categories",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -272,6 +286,20 @@ const docTemplate = `{
                     "Containers"
                 ],
                 "summary": "List Containers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -303,8 +331,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Container"
-                            "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
+                            "$ref": "#/definitions/dto.CreateContainerRequest"
                         }
                     }
                 ],
@@ -704,7 +731,7 @@ const docTemplate = `{
         },
         "/items": {
             "get": {
-                "description": "Get all items",
+                "description": "Get items (paginated)",
                 "produces": [
                     "application/json"
                 ],
@@ -1075,6 +1102,20 @@ const docTemplate = `{
                     "Locations"
                 ],
                 "summary": "List Locations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1276,6 +1317,20 @@ const docTemplate = `{
                     "Projects"
                 ],
                 "summary": "List Projects",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1501,6 +1556,18 @@ const docTemplate = `{
                         "description": "Filter by Project ID",
                         "name": "project_id",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1518,8 +1585,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateItemRequest": {
-        "invelog_pkg_dto.CreateContainerRequest": {
+        "dto.CreateContainerRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1542,7 +1608,7 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_dto.CreateItemRequest": {
+        "dto.CreateItemRequest": {
             "type": "object",
             "properties": {
                 "category_id": {

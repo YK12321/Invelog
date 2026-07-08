@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"invelog/pkg/models"
@@ -17,14 +19,28 @@ import (
 // @Param category_id query string false "Filter by Category ID"
 // @Param container_id query string false "Filter by Container ID"
 // @Param project_id query string false "Filter by Project ID"
+// @Param limit query int false "Limit (default 1000, max 10000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Item
 // @Router /search/items [get]
 func (h *Handler) SearchItems(c *gin.Context) {
-	query := h.DB.Model(&models.Item{}).
-		Preload("Category").
-		Preload("Container").
-		Preload("ItemType").
-		Preload("OriginLocation")
+	limitStr := c.DefaultQuery("limit", "1000")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
+	query := h.DB.Model(&models.Item{})
 
 	// Filter by search query
 	if q := c.Query("query"); q != "" {
@@ -50,11 +66,25 @@ func (h *Handler) SearchItems(c *gin.Context) {
 			Where("containers.project_id = ?", projectID)
 	}
 
+	var total int64
+	query.Count(&total)
+
 	var items []models.Item
-	if err := query.Find(&items).Error; err != nil {
+	if err := query.Preload("Category").
+		Preload("Container").
+		Preload("ItemType").
+		Preload("OriginLocation").
+		Order("created_at desc").
+		Limit(limit).
+		Offset(offset).
+		Find(&items).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Search failed"})
 		return
 	}
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
 
 	c.JSON(http.StatusOK, items)
 }

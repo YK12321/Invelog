@@ -1,9 +1,6 @@
 basePath: /api/v1
 definitions:
-<<<<<<< bolt-performance-pagination-items-17337018210979591320
-  dto.CreateItemRequest:
-=======
-  invelog_pkg_dto.CreateContainerRequest:
+  dto.CreateContainerRequest:
     properties:
       description:
         type: string
@@ -18,8 +15,7 @@ definitions:
     required:
     - name
     type: object
-  invelog_pkg_dto.CreateItemRequest:
->>>>>>> main
+  dto.CreateItemRequest:
     properties:
       category_id:
         type: string
@@ -279,6 +275,15 @@ paths:
   /categories:
     get:
       description: Get all categories
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -412,6 +417,15 @@ paths:
   /containers:
     get:
       description: Get all containers
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -434,11 +448,7 @@ paths:
         name: container
         required: true
         schema:
-<<<<<<< bolt-performance-pagination-items-17337018210979591320
-          $ref: '#/definitions/models.Container'
-=======
-          $ref: '#/definitions/invelog_pkg_dto.CreateContainerRequest'
->>>>>>> main
+          $ref: '#/definitions/dto.CreateContainerRequest'
       produces:
       - application/json
       responses:
@@ -705,7 +715,7 @@ paths:
       - ItemTypes
   /items:
     get:
-      description: Get all items
+      description: Get items (paginated)
       parameters:
       - description: Limit (default 1000, max 10000)
         in: query
@@ -948,6 +958,15 @@ paths:
   /locations:
     get:
       description: Get all locations
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -1081,6 +1100,15 @@ paths:
   /projects:
     get:
       description: Get all projects
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -1231,6 +1259,14 @@ paths:
         in: query
         name: project_id
         type: string
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
