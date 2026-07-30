@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -14,15 +17,20 @@ import (
 // @Tags Projects
 // @Accept json
 // @Produce json
-// @Param project body models.Project true "Project Data"
+// @Param project body dto.CreateProjectRequest true "Project Data"
 // @Success 201 {object} models.Project
 // @Failure 400 {object} map[string]string
 // @Router /projects [post]
 func (h *Handler) CreateProject(c *gin.Context) {
-	var project models.Project
-	if err := c.ShouldBindJSON(&project); err != nil {
+	var req dto.CreateProjectRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	project := models.Project{
+		Name:        req.Name,
+		Description: req.Description,
 	}
 
 	if err := h.DB.Create(&project).Error; err != nil {
@@ -38,11 +46,37 @@ func (h *Handler) CreateProject(c *gin.Context) {
 // @Description Get all projects
 // @Tags Projects
 // @Produce json
+// @Param limit query int false "Limit (default 1000, max 10000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Project
 // @Router /projects [get]
 func (h *Handler) ListProjects(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "1000")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var projects []models.Project
-	h.DB.Find(&projects)
+	var total int64
+
+	h.DB.Model(&models.Project{}).Count(&total)
+	h.DB.Order("created_at desc").Limit(limit).Offset(offset).Find(&projects)
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, projects)
 }
 
@@ -76,7 +110,7 @@ func (h *Handler) GetProject(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Project ID"
-// @Param project body models.Project true "Project Data"
+// @Param project body dto.UpdateProjectInput true "Project Data"
 // @Success 200 {object} models.Project
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -94,11 +128,18 @@ func (h *Handler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&project); err != nil {
+	var input dto.UpdateProjectInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	project.ID = id // Ensure ID cannot be changed
+
+	if input.Name != nil {
+		project.Name = *input.Name
+	}
+	if input.Description != nil {
+		project.Description = *input.Description
+	}
 
 	if err := h.DB.Save(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})

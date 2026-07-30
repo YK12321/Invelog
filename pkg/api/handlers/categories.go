@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"invelog/pkg/dto"
 	"invelog/pkg/models"
@@ -15,15 +17,20 @@ import (
 // @Tags Categories
 // @Accept json
 // @Produce json
-// @Param category body models.Category true "Category Data"
+// @Param category body dto.CreateCategoryRequest true "Category Data"
 // @Success 201 {object} models.Category
 // @Failure 400 {object} map[string]string
 // @Router /categories [post]
 func (h *Handler) CreateCategory(c *gin.Context) {
-	var category models.Category
-	if err := c.ShouldBindJSON(&category); err != nil {
+	var req dto.CreateCategoryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	category := models.Category{
+		Name:        req.Name,
+		Description: req.Description,
 	}
 
 	if err := h.DB.Create(&category).Error; err != nil {
@@ -39,11 +46,37 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 // @Description Get all categories
 // @Tags Categories
 // @Produce json
+// @Param limit query int false "Limit (default 1000, max 10000)"
+// @Param offset query int false "Offset (default 0)"
 // @Success 200 {array} models.Category
 // @Router /categories [get]
 func (h *Handler) ListCategories(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "1000")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	var categories []models.Category
-	h.DB.Find(&categories)
+	var total int64
+
+	h.DB.Model(&models.Category{}).Count(&total)
+	h.DB.Order("created_at desc").Limit(limit).Offset(offset).Find(&categories)
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, categories)
 }
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -25,6 +26,8 @@ func (h *Handler) CreateItemType(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	itemType.Category = nil
 
 	if err := h.DB.Create(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create item type"})
@@ -61,7 +64,15 @@ func (h *Handler) ListItemTypes(c *gin.Context) {
 	}
 
 	var itemTypes []models.ItemType
-	h.DB.Preload("Category").Limit(limit).Offset(offset).Find(&itemTypes)
+	var total int64
+
+	h.DB.Model(&models.ItemType{}).Count(&total)
+	h.DB.Preload("Category").Order("created_at desc").Limit(limit).Offset(offset).Find(&itemTypes)
+
+	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
+	c.Header("X-Limit", fmt.Sprintf("%d", limit))
+	c.Header("X-Offset", fmt.Sprintf("%d", offset))
+
 	c.JSON(http.StatusOK, itemTypes)
 }
 
@@ -118,6 +129,8 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 		return
 	}
 	itemType.ID = id // Ensure ID cannot be changed
+
+	itemType.Category = nil
 
 	if err := h.DB.Save(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item type"})
