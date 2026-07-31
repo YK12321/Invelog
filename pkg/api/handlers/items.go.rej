@@ -1,0 +1,29 @@
+--- items.go
++++ items.go
+@@ -522,14 +522,15 @@
+	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Count(&totalAudits)
+	h.DB.Model(&models.Item{}).Count(&totalItems)
+
+-	type AuditResult struct {
+-		PosDrift int64
+-		NegDrift int64
+-	}
+-	var res AuditResult
+-	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Select(
+-		"COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos_drift",
+-		"COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg_drift",
+-	).Scan(&res)
+-	posDrift = res.PosDrift
+-	negDrift = res.NegDrift
++	// ⚡ Bolt: Calculate drift at the DB level instead of loading all logs into memory
++	type AuditResult struct {
++		PosDrift int64
++		NegDrift int64
++	}
++	var res AuditResult
++	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Select(
++		"COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos_drift",
++		"COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg_drift",
++	).Scan(&res)
++	posDrift = res.PosDrift
++	negDrift = res.NegDrift
