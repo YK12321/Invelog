@@ -33,6 +33,9 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		protected := api.Group("")
 		protected.Use(middleware.AuthMiddleware())
 		{
+			// Personal tasks query
+			protected.GET("/my-tasks", h.GetMyTasks)
+
 			// Rapid scan lookup
 			protected.GET("/scan/:code", h.ScanLookup)
 
@@ -53,12 +56,43 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 			protected.PUT("/locations/:id", h.UpdateLocation)
 			protected.DELETE("/locations/:id", middleware.RequireRole("admin"), h.DeleteLocation)
 
-			// Projects
+			// Projects & SEPM / PM Suite
 			protected.POST("/projects", h.CreateProject)
 			protected.GET("/projects", h.ListProjects)
 			protected.GET("/projects/:id", h.GetProject)
 			protected.PUT("/projects/:id", h.UpdateProject)
 			protected.DELETE("/projects/:id", middleware.RequireRole("admin"), h.DeleteProject)
+
+			// Project Team Members
+			protected.POST("/projects/:id/members", h.AddProjectMember)
+			protected.GET("/projects/:id/members", h.ListProjectMembers)
+			protected.DELETE("/projects/:id/members/:user_id", h.RemoveProjectMember)
+
+			// Project Tasks & Resource Allocation
+			protected.POST("/projects/:id/tasks", h.CreateTask)
+			protected.GET("/projects/:id/tasks", h.ListTasks)
+			protected.PUT("/projects/:id/tasks/:task_id", h.UpdateTask)
+			protected.DELETE("/projects/:id/tasks/:task_id", h.DeleteTask)
+			protected.POST("/projects/:id/tasks/:task_id/reserve-resource", h.ReserveTaskResource)
+
+			// Project Milestones
+			protected.POST("/projects/:id/milestones", h.CreateMilestone)
+			protected.GET("/projects/:id/milestones", h.ListMilestones)
+
+			// Project Requirements (SEPM)
+			protected.POST("/projects/:id/requirements", h.CreateRequirement)
+			protected.GET("/projects/:id/requirements", h.ListRequirements)
+
+			// Project WBS (SEPM)
+			protected.POST("/projects/:id/wbs", h.CreateWBSNode)
+			protected.GET("/projects/:id/wbs", h.ListWBSNodes)
+
+			// Project Risk Register (FMEA / SEPM)
+			protected.POST("/projects/:id/risks", h.CreateRiskItem)
+			protected.GET("/projects/:id/risks", h.ListRiskItems)
+
+			// PM & SEPM Executive Dashboard
+			protected.GET("/projects/:id/dashboard", h.GetPMDashboard)
 
 			// Containers
 			protected.POST("/containers", h.CreateContainer)
