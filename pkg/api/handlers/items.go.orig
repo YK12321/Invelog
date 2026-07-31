@@ -522,7 +522,6 @@ func (h *Handler) GetAuditSummary(c *gin.Context) {
 	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Count(&totalAudits)
 	h.DB.Model(&models.Item{}).Count(&totalItems)
 
-	// ⚡ Bolt: Calculate drift at the DB level instead of loading all logs into memory
 	type AuditResult struct {
 		PosDrift int64
 		NegDrift int64
