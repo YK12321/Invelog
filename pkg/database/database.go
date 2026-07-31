@@ -7,9 +7,9 @@ import (
 
 	"invelog/pkg/models"
 
+	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -66,6 +66,7 @@ func Connect(cfg Config) (*gorm.DB, error) {
 func Migrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
 	err := db.AutoMigrate(
+		&models.User{},
 		&models.Category{},
 		&models.Location{},
 		&models.Project{},

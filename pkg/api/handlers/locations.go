@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
@@ -16,15 +17,20 @@ import (
 // @Tags Locations
 // @Accept json
 // @Produce json
-// @Param location body models.Location true "Location Data"
+// @Param location body dto.CreateLocationRequest true "Location Data"
 // @Success 201 {object} models.Location
 // @Failure 400 {object} map[string]string
 // @Router /locations [post]
 func (h *Handler) CreateLocation(c *gin.Context) {
-	var location models.Location
-	if err := c.ShouldBindJSON(&location); err != nil {
+	var req dto.CreateLocationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	location := models.Location{
+		Name:        req.Name,
+		Description: req.Description,
 	}
 
 	if err := h.DB.Create(&location).Error; err != nil {
@@ -32,7 +38,7 @@ func (h *Handler) CreateLocation(c *gin.Context) {
 		return
 	}
 
-	h.LogActivity("CREATE", "Location", location.ID, "Created location: "+location.Name)
+	h.LogActivityWithContext(c, "CREATE", "Location", location.ID, "Created location: "+location.Name)
 	c.JSON(http.StatusCreated, location)
 }
 
@@ -104,7 +110,7 @@ func (h *Handler) GetLocation(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Location ID"
-// @Param location body models.Location true "Location Data"
+// @Param location body dto.UpdateLocationInput true "Location Data"
 // @Success 200 {object} models.Location
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -122,18 +128,25 @@ func (h *Handler) UpdateLocation(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&location); err != nil {
+	var input dto.UpdateLocationInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	location.ID = id // Ensure ID cannot be changed
+
+	if input.Name != nil {
+		location.Name = *input.Name
+	}
+	if input.Description != nil {
+		location.Description = *input.Description
+	}
 
 	if err := h.DB.Save(&location).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update location"})
 		return
 	}
 
-	h.LogActivity("UPDATE", "Location", location.ID, "Updated location: "+location.Name)
+	h.LogActivityWithContext(c, "UPDATE", "Location", location.ID, "Updated location: "+location.Name)
 	c.JSON(http.StatusOK, location)
 }
 
@@ -158,6 +171,6 @@ func (h *Handler) DeleteLocation(c *gin.Context) {
 		return
 	}
 
-	h.LogActivity("DELETE", "Location", id, "Deleted location")
+	h.LogActivityWithContext(c, "DELETE", "Location", id, "Deleted location")
 	c.JSON(http.StatusNoContent, nil)
 }

@@ -33,13 +33,33 @@ func (h *Handler) LogActivity(action, entityType string, entityID uuid.UUID, det
 	h.LogActivityDetailed(action, entityType, entityID, details, nil, nil, nil, 0)
 }
 
+// LogActivityWithContext logs actions extracting authenticated UserID if available
+func (h *Handler) LogActivityWithContext(c *gin.Context, action, entityType string, entityID uuid.UUID, details string) {
+	h.LogActivityDetailedWithContext(c, action, entityType, entityID, details, nil, nil, nil, 0)
+}
+
 // LogActivityDetailed helps log actions with full context in the database
 func (h *Handler) LogActivityDetailed(action, entityType string, entityID uuid.UUID, details string, fromContainerID, toContainerID, projectID *uuid.UUID, quantityChange int) {
+	h.LogActivityDetailedWithContext(nil, action, entityType, entityID, details, fromContainerID, toContainerID, projectID, quantityChange)
+}
+
+// LogActivityDetailedWithContext logs actions with Gin context to set UserID
+func (h *Handler) LogActivityDetailedWithContext(c *gin.Context, action, entityType string, entityID uuid.UUID, details string, fromContainerID, toContainerID, projectID *uuid.UUID, quantityChange int) {
+	var userID *uuid.UUID
+	if c != nil {
+		if val, exists := c.Get("userID"); exists {
+			if id, ok := val.(uuid.UUID); ok {
+				userID = &id
+			}
+		}
+	}
+
 	log := models.ActivityLog{
 		Action:          action,
 		EntityType:      entityType,
 		EntityID:        entityID,
 		Details:         details,
+		UserID:          userID,
 		FromContainerID: fromContainerID,
 		ToContainerID:   toContainerID,
 		ProjectID:       projectID,

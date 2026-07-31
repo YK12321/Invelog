@@ -2,6 +2,7 @@ package router
 
 import (
 	"invelog/pkg/api/handlers"
+	"invelog/pkg/api/middleware"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -21,56 +22,79 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	{
 		api.GET("/health", h.HealthCheck)
 
-		// Categories
-		api.POST("/categories", h.CreateCategory)
-		api.GET("/categories", h.ListCategories)
-		api.GET("/categories/:id", h.GetCategory)
-		api.PUT("/categories/:id", h.UpdateCategory)
-		api.DELETE("/categories/:id", h.DeleteCategory)
+		// Public Auth routes
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", h.Register)
+			auth.POST("/login", h.Login)
+		}
 
-		// Locations
-		api.POST("/locations", h.CreateLocation)
-		api.GET("/locations", h.ListLocations)
-		api.GET("/locations/:id", h.GetLocation)
-		api.PUT("/locations/:id", h.UpdateLocation)
-		api.DELETE("/locations/:id", h.DeleteLocation)
+		// Protected API routes
+		protected := api.Group("")
+		protected.Use(middleware.AuthMiddleware())
+		{
+			// Rapid scan lookup
+			protected.GET("/scan/:code", h.ScanLookup)
 
-		// Projects
-		api.POST("/projects", h.CreateProject)
-		api.GET("/projects", h.ListProjects)
-		api.GET("/projects/:id", h.GetProject)
-		api.PUT("/projects/:id", h.UpdateProject)
-		api.DELETE("/projects/:id", h.DeleteProject)
+			// Audit Summary
+			protected.GET("/audit/summary", h.GetAuditSummary)
 
-		// Containers
-		api.POST("/containers", h.CreateContainer)
-		api.GET("/containers", h.ListContainers)
-		api.GET("/containers/:id", h.GetContainer)
-		api.PUT("/containers/:id", h.UpdateContainer)
-		api.DELETE("/containers/:id", h.DeleteContainer)
+			// Categories
+			protected.POST("/categories", h.CreateCategory)
+			protected.GET("/categories", h.ListCategories)
+			protected.GET("/categories/:id", h.GetCategory)
+			protected.PUT("/categories/:id", h.UpdateCategory)
+			protected.DELETE("/categories/:id", middleware.RequireRole("admin"), h.DeleteCategory)
 
-		// ItemTypes
-		api.POST("/item-types", h.CreateItemType)
-		api.GET("/item-types", h.ListItemTypes)
-		api.GET("/item-types/:id", h.GetItemType)
-		api.PUT("/item-types/:id", h.UpdateItemType)
-		api.DELETE("/item-types/:id", h.DeleteItemType)
+			// Locations
+			protected.POST("/locations", h.CreateLocation)
+			protected.GET("/locations", h.ListLocations)
+			protected.GET("/locations/:id", h.GetLocation)
+			protected.PUT("/locations/:id", h.UpdateLocation)
+			protected.DELETE("/locations/:id", middleware.RequireRole("admin"), h.DeleteLocation)
 
-		// Items
-		api.POST("/items", h.CreateItem)
-		api.GET("/items", h.ListItems)
-		api.GET("/items/:id", h.GetItem)
-		api.PUT("/items/:id", h.UpdateItem)
-		api.DELETE("/items/:id", h.DeleteItem)
-		api.POST("/items/:id/move", h.MoveItem)
-		api.POST("/items/:id/checkout", h.CheckOutItem)
-		api.POST("/items/:id/checkin", h.CheckInItem)
+			// Projects
+			protected.POST("/projects", h.CreateProject)
+			protected.GET("/projects", h.ListProjects)
+			protected.GET("/projects/:id", h.GetProject)
+			protected.PUT("/projects/:id", h.UpdateProject)
+			protected.DELETE("/projects/:id", middleware.RequireRole("admin"), h.DeleteProject)
 
-		// Search
-		api.GET("/search/items", h.SearchItems)
+			// Containers
+			protected.POST("/containers", h.CreateContainer)
+			protected.GET("/containers", h.ListContainers)
+			protected.GET("/containers/:id", h.GetContainer)
+			protected.PUT("/containers/:id", h.UpdateContainer)
+			protected.DELETE("/containers/:id", middleware.RequireRole("admin"), h.DeleteContainer)
 
-		// Activity Logs
-		api.GET("/activity-logs", h.ListActivityLogs)
+			// ItemTypes
+			protected.POST("/item-types", h.CreateItemType)
+			protected.GET("/item-types", h.ListItemTypes)
+			protected.GET("/item-types/low-stock", h.GetLowStockItemTypes)
+			protected.GET("/item-types/:id", h.GetItemType)
+			protected.PUT("/item-types/:id", h.UpdateItemType)
+			protected.DELETE("/item-types/:id", middleware.RequireRole("admin"), h.DeleteItemType)
+
+			// Items
+			protected.POST("/items", h.CreateItem)
+			protected.GET("/items", h.ListItems)
+			protected.GET("/items/low-stock", h.GetLowStockItems)
+			protected.POST("/items/import", h.ImportItemsCSV)
+			protected.GET("/items/export", h.ExportItemsCSV)
+			protected.GET("/items/:id", h.GetItem)
+			protected.PUT("/items/:id", h.UpdateItem)
+			protected.DELETE("/items/:id", middleware.RequireRole("admin"), h.DeleteItem)
+			protected.POST("/items/:id/move", h.MoveItem)
+			protected.POST("/items/:id/checkout", h.CheckOutItem)
+			protected.POST("/items/:id/checkin", h.CheckInItem)
+			protected.POST("/items/:id/audit", h.AuditItem)
+
+			// Search
+			protected.GET("/search/items", h.SearchItems)
+
+			// Activity Logs
+			protected.GET("/activity-logs", h.ListActivityLogs)
+		}
 	}
 
 	return r

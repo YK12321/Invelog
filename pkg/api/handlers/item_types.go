@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
+	"invelog/pkg/dto"
 	"invelog/pkg/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 )
 
 // @Summary Create ItemType
@@ -16,30 +19,69 @@ import (
 // @Tags ItemTypes
 // @Accept json
 // @Produce json
-// @Param itemType body models.ItemType true "ItemType Data"
+// @Param itemType body dto.CreateItemTypeRequest true "ItemType Data"
 // @Success 201 {object} models.ItemType
 // @Failure 400 {object} map[string]string
 // @Router /item-types [post]
 func (h *Handler) CreateItemType(c *gin.Context) {
-	var itemType models.ItemType
-	if err := c.ShouldBindJSON(&itemType); err != nil {
+	var req dto.CreateItemTypeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	itemType.Category = nil
+	if req.CategoryID != nil {
+		var cat models.Category
+		if err := h.DB.First(&cat, "id = ?", req.CategoryID).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Referenced category_id does not exist"})
+			return
+		}
+	}
+
+	minQty := 0
+	if req.MinQuantity != nil {
+		if *req.MinQuantity < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "min_quantity cannot be negative"})
+			return
+		}
+		minQty = *req.MinQuantity
+	}
+
+	reorderQty := 0
+	if req.ReorderQuantity != nil {
+		if *req.ReorderQuantity < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "reorder_quantity cannot be negative"})
+			return
+		}
+		reorderQty = *req.ReorderQuantity
+	}
+
+	itemType := models.ItemType{
+		Name:            req.Name,
+		Description:     req.Description,
+		Specifications:  req.Specifications,
+		Manufacturer:    req.Manufacturer,
+		PartNumber:      req.PartNumber,
+		MinQuantity:     minQty,
+		ReorderQuantity: reorderQty,
+		CategoryID:      req.CategoryID,
+	}
+
+	if len(req.Parameters) > 0 {
+		itemType.Parameters = datatypes.JSON(req.Parameters)
+	}
 
 	if err := h.DB.Create(&itemType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create item type"})
 		return
 	}
 
-	h.LogActivity("CREATE", "ItemType", itemType.ID, "Created item type: "+itemType.Name)
+	h.LogActivityWithContext(c, "CREATE", "ItemType", itemType.ID, "Created item type: "+itemType.Name)
 	c.JSON(http.StatusCreated, itemType)
 }
 
 // @Summary List ItemTypes
-// @Description Get all item types
+// @Description Get all item types with optional parametric filters (e.g. param.package=0805)
 // @Tags ItemTypes
 // @Produce json
 // @Param limit query int false "Limit (default 100, max 1000)"
@@ -63,11 +105,22 @@ func (h *Handler) ListItemTypes(c *gin.Context) {
 		offset = 0
 	}
 
+	query := h.DB.Model(&models.ItemType{})
+
+	// Handle parametric query filtering (param.key=val)
+	for key, values := range c.Request.URL.Query() {
+		if strings.HasPrefix(key, "param.") && len(values) > 0 {
+			paramKey := strings.TrimPrefix(key, "param.")
+			paramVal := values[0]
+			query = query.Where(datatypes.JSONQuery("parameters").Equals(paramVal, paramKey))
+		}
+	}
+
 	var itemTypes []models.ItemType
 	var total int64
 
-	h.DB.Model(&models.ItemType{}).Count(&total)
-	h.DB.Preload("Category").Order("created_at desc").Limit(limit).Offset(offset).Find(&itemTypes)
+	query.Count(&total)
+	query.Preload("Category").Order("created_at desc").Limit(limit).Offset(offset).Find(&itemTypes)
 
 	c.Header("X-Total-Count", fmt.Sprintf("%d", total))
 	c.Header("X-Limit", fmt.Sprintf("%d", limit))
@@ -106,7 +159,7 @@ func (h *Handler) GetItemType(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "ItemType ID"
-// @Param itemType body models.ItemType true "ItemType Data"
+// @Param itemType body dto.UpdateItemTypeInput true "ItemType Data"
 // @Success 200 {object} models.ItemType
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -124,11 +177,53 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&itemType); err != nil {
+	var input dto.UpdateItemTypeInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	itemType.ID = id // Ensure ID cannot be changed
+
+	if input.CategoryID != nil {
+		var cat models.Category
+		if err := h.DB.First(&cat, "id = ?", input.CategoryID).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Referenced category_id does not exist"})
+			return
+		}
+		itemType.CategoryID = input.CategoryID
+	}
+
+	if input.Name != nil {
+		itemType.Name = *input.Name
+	}
+	if input.Description != nil {
+		itemType.Description = *input.Description
+	}
+	if input.Specifications != nil {
+		itemType.Specifications = *input.Specifications
+	}
+	if len(input.Parameters) > 0 {
+		itemType.Parameters = datatypes.JSON(input.Parameters)
+	}
+	if input.Manufacturer != nil {
+		itemType.Manufacturer = *input.Manufacturer
+	}
+	if input.PartNumber != nil {
+		itemType.PartNumber = *input.PartNumber
+	}
+	if input.MinQuantity != nil {
+		if *input.MinQuantity < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "min_quantity cannot be negative"})
+			return
+		}
+		itemType.MinQuantity = *input.MinQuantity
+	}
+	if input.ReorderQuantity != nil {
+		if *input.ReorderQuantity < 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "reorder_quantity cannot be negative"})
+			return
+		}
+		itemType.ReorderQuantity = *input.ReorderQuantity
+	}
 
 	itemType.Category = nil
 
@@ -137,7 +232,7 @@ func (h *Handler) UpdateItemType(c *gin.Context) {
 		return
 	}
 
-	h.LogActivity("UPDATE", "ItemType", itemType.ID, "Updated item type: "+itemType.Name)
+	h.LogActivityWithContext(c, "UPDATE", "ItemType", itemType.ID, "Updated item type: "+itemType.Name)
 	c.JSON(http.StatusOK, itemType)
 }
 
@@ -162,6 +257,31 @@ func (h *Handler) DeleteItemType(c *gin.Context) {
 		return
 	}
 
-	h.LogActivity("DELETE", "ItemType", id, "Deleted item type")
+	h.LogActivityWithContext(c, "DELETE", "ItemType", id, "Deleted item type")
 	c.JSON(http.StatusNoContent, nil)
+}
+
+// @Summary Get Low Stock ItemTypes
+// @Description Query component types where aggregate quantity across containers drops below configured min_quantity
+// @Tags ItemTypes
+// @Produce json
+// @Success 200 {array} models.ItemType
+// @Router /item-types/low-stock [get]
+func (h *Handler) GetLowStockItemTypes(c *gin.Context) {
+	var allTypes []models.ItemType
+	if err := h.DB.Preload("Category").Where("min_quantity > 0").Find(&allTypes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch item types"})
+		return
+	}
+
+	var lowStockTypes []models.ItemType
+	for _, it := range allTypes {
+		var totalQty int64
+		h.DB.Model(&models.Item{}).Where("item_type_id = ?", it.ID).Select("COALESCE(SUM(quantity), 0)").Scan(&totalQty)
+		if int(totalQty) <= it.MinQuantity {
+			lowStockTypes = append(lowStockTypes, it)
+		}
+	}
+
+	c.JSON(http.StatusOK, lowStockTypes)
 }

@@ -6,6 +6,10 @@ type CreateItemRequest struct {
 	Name             string     `json:"name"`
 	Description      string     `json:"description"`
 	Quantity         *int       `json:"quantity"`
+	MinQuantity      *int       `json:"min_quantity"`
+	ReorderQuantity  *int       `json:"reorder_quantity"`
+	SKU              string     `json:"sku"`
+	Barcode          string     `json:"barcode"`
 	IndividualNotes  string     `json:"individual_notes"`
 	SerialNumber     string     `json:"serial_number"`
 	ItemTypeID       *uuid.UUID `json:"item_type_id"`
