@@ -1,9 +1,42 @@
 basePath: /api/v1
 definitions:
-<<<<<<< bolt-performance-pagination-items-17337018210979591320
-  dto.CreateItemRequest:
-=======
-  invelog_pkg_dto.CreateContainerRequest:
+  dto.AuditItemRequest:
+    properties:
+      notes:
+        type: string
+      physical_count:
+        type: integer
+    type: object
+  dto.AuditSummaryResponse:
+    properties:
+      negative_drift:
+        type: integer
+      net_drift:
+        type: integer
+      positive_drift:
+        type: integer
+      total_audits:
+        type: integer
+      total_items:
+        type: integer
+    type: object
+  dto.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.CreateCategoryRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateContainerRequest:
     properties:
       description:
         type: string
@@ -18,9 +51,10 @@ definitions:
     required:
     - name
     type: object
-  invelog_pkg_dto.CreateItemRequest:
->>>>>>> main
+  dto.CreateItemRequest:
     properties:
+      barcode:
+        type: string
       category_id:
         type: string
       container_id:
@@ -31,14 +65,80 @@ definitions:
         type: string
       item_type_id:
         type: string
+      min_quantity:
+        type: integer
       name:
         type: string
       origin_location_id:
         type: string
       quantity:
         type: integer
+      reorder_quantity:
+        type: integer
       serial_number:
         type: string
+      sku:
+        type: string
+    type: object
+  dto.CreateItemTypeRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      manufacturer:
+        type: string
+      min_quantity:
+        type: integer
+      name:
+        type: string
+      parameters:
+        items:
+          type: integer
+        type: array
+      part_number:
+        type: string
+      reorder_quantity:
+        type: integer
+      specifications:
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateLocationRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  dto.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        description: Optional, defaults to "user"
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
     type: object
   dto.UpdateCategoryInput:
     properties:
@@ -47,8 +147,64 @@ definitions:
       name:
         type: string
     type: object
+  dto.UpdateContainerInput:
+    properties:
+      description:
+        type: string
+      location_id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      project_id:
+        type: string
+    type: object
+  dto.UpdateItemTypeInput:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      manufacturer:
+        type: string
+      min_quantity:
+        type: integer
+      name:
+        type: string
+      parameters:
+        items:
+          type: integer
+        type: array
+      part_number:
+        type: string
+      reorder_quantity:
+        type: integer
+      specifications:
+        type: string
+    type: object
+  dto.UpdateLocationInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
   handlers.UpdateItemInput:
     properties:
+      barcode:
+        type: string
       category_id:
         type: string
       container_id:
@@ -59,13 +215,19 @@ definitions:
         type: string
       item_type_id:
         type: string
+      min_quantity:
+        type: integer
       name:
         type: string
       origin_location_id:
         type: string
       quantity:
         type: integer
+      reorder_quantity:
+        type: integer
       serial_number:
+        type: string
+      sku:
         type: string
     type: object
   models.ActivityLog:
@@ -102,7 +264,7 @@ definitions:
       updated_at:
         type: string
       user_id:
-        description: 'Optional: If we ever add users'
+        description: 'Optional: Set when user performs action'
         type: string
     type: object
   models.Category:
@@ -120,6 +282,8 @@ definitions:
     type: object
   models.Container:
     properties:
+      barcode:
+        type: string
       created_at:
         type: string
       description:
@@ -145,6 +309,8 @@ definitions:
     type: object
   models.Item:
     properties:
+      barcode:
+        type: string
       category:
         $ref: '#/definitions/models.Category'
       category_id:
@@ -171,6 +337,8 @@ definitions:
         type: string
       last_check_out_time:
         type: string
+      min_quantity:
+        type: integer
       name:
         description: Used if ItemType is not provided
         type: string
@@ -180,7 +348,11 @@ definitions:
         type: string
       quantity:
         type: integer
+      reorder_quantity:
+        type: integer
       serial_number:
+        type: string
+      sku:
         type: string
       updated_at:
         type: string
@@ -199,10 +371,18 @@ definitions:
         type: string
       manufacturer:
         type: string
+      min_quantity:
+        type: integer
       name:
         type: string
+      parameters:
+        items:
+          type: integer
+        type: array
       part_number:
         type: string
+      reorder_quantity:
+        type: integer
       specifications:
         type: string
       updated_at:
@@ -223,6 +403,10 @@ definitions:
     type: object
   models.Project:
     properties:
+      allocated_cost:
+        type: number
+      budget:
+        type: number
       created_at:
         type: string
       description:
@@ -231,10 +415,40 @@ definitions:
         type: string
       name:
         type: string
+      owner:
+        $ref: '#/definitions/models.User'
+      owner_id:
+        type: string
+      phase:
+        description: e.g. Concept, Definition, Design, Integration, Operations, Closeout
+        type: string
+      start_date:
+        type: string
       status:
-        description: e.g., "active", "completed", "archived"
+        description: e.g. Active, Planning, InReview, Completed, Archived
+        type: string
+      target_end_date:
+        type: string
+      trl:
+        description: Target Technology Readiness Level (1-9)
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      role:
+        description: e.g., "admin", "user"
         type: string
       updated_at:
+        type: string
+      username:
         type: string
     type: object
 host: localhost:8080
@@ -276,9 +490,87 @@ paths:
       summary: List Activity Logs
       tags:
       - Activity Logs
+  /audit/summary:
+    get:
+      description: Get audit reconciliation summary metrics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AuditSummaryResponse'
+      summary: Get Audit Summary
+      tags:
+      - Audit
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and get JWT token
+      parameters:
+      - description: Login Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login User
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: Register Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register User
+      tags:
+      - Auth
   /categories:
     get:
       description: Get all categories
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -301,7 +593,7 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/models.Category'
+          $ref: '#/definitions/dto.CreateCategoryRequest'
       produces:
       - application/json
       responses:
@@ -412,6 +704,15 @@ paths:
   /containers:
     get:
       description: Get all containers
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -434,11 +735,7 @@ paths:
         name: container
         required: true
         schema:
-<<<<<<< bolt-performance-pagination-items-17337018210979591320
-          $ref: '#/definitions/models.Container'
-=======
-          $ref: '#/definitions/invelog_pkg_dto.CreateContainerRequest'
->>>>>>> main
+          $ref: '#/definitions/dto.CreateContainerRequest'
       produces:
       - application/json
       responses:
@@ -523,7 +820,7 @@ paths:
         name: container
         required: true
         schema:
-          $ref: '#/definitions/models.Container'
+          $ref: '#/definitions/dto.UpdateContainerInput'
       produces:
       - application/json
       responses:
@@ -563,7 +860,7 @@ paths:
       - System
   /item-types:
     get:
-      description: Get all item types
+      description: Get all item types with optional parametric filters (e.g. param.package=0805)
       parameters:
       - description: Limit (default 100, max 1000)
         in: query
@@ -595,7 +892,7 @@ paths:
         name: itemType
         required: true
         schema:
-          $ref: '#/definitions/models.ItemType'
+          $ref: '#/definitions/dto.CreateItemTypeRequest'
       produces:
       - application/json
       responses:
@@ -680,7 +977,7 @@ paths:
         name: itemType
         required: true
         schema:
-          $ref: '#/definitions/models.ItemType'
+          $ref: '#/definitions/dto.UpdateItemTypeInput'
       produces:
       - application/json
       responses:
@@ -703,9 +1000,25 @@ paths:
       summary: Update ItemType
       tags:
       - ItemTypes
+  /item-types/low-stock:
+    get:
+      description: Query component types where aggregate quantity across containers
+        drops below configured min_quantity
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ItemType'
+            type: array
+      summary: Get Low Stock ItemTypes
+      tags:
+      - ItemTypes
   /items:
     get:
-      description: Get all items
+      description: Get items (paginated)
       parameters:
       - description: Limit (default 1000, max 10000)
         in: query
@@ -845,6 +1158,40 @@ paths:
       summary: Update Item
       tags:
       - Items
+  /items/{id}/audit:
+    post:
+      consumes:
+      - application/json
+      description: Cycle count audit reconciliation for an item
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Audit Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuditItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Audit Item
+      tags:
+      - Audit
   /items/{id}/checkin:
     post:
       description: Check in an item by marking it as not checked out and logging the
@@ -945,9 +1292,83 @@ paths:
       summary: Move Item
       tags:
       - Items
+  /items/export:
+    get:
+      description: Export items as CSV file filtered by location, container, or category
+      parameters:
+      - description: Filter by Origin Location ID
+        in: query
+        name: location_id
+        type: string
+      - description: Filter by Container ID
+        in: query
+        name: container_id
+        type: string
+      - description: Filter by Category ID
+        in: query
+        name: category_id
+        type: string
+      produces:
+      - text/csv
+      responses: {}
+      summary: Export Items as CSV
+      tags:
+      - Items
+  /items/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Import items in bulk from a CSV upload
+      parameters:
+      - description: CSV File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Import Items via CSV
+      tags:
+      - Items
+  /items/low-stock:
+    get:
+      description: Query items where quantity <= min_quantity
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Item'
+            type: array
+      summary: Get Low Stock Items
+      tags:
+      - Items
   /locations:
     get:
       description: Get all locations
+      parameters:
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
@@ -970,7 +1391,7 @@ paths:
         name: location
         required: true
         schema:
-          $ref: '#/definitions/models.Location'
+          $ref: '#/definitions/dto.CreateLocationRequest'
       produces:
       - application/json
       responses:
@@ -1055,7 +1476,7 @@ paths:
         name: location
         required: true
         schema:
-          $ref: '#/definitions/models.Location'
+          $ref: '#/definitions/dto.UpdateLocationInput'
       produces:
       - application/json
       responses:
@@ -1078,83 +1499,13 @@ paths:
       summary: Update Location
       tags:
       - Locations
-  /projects:
+  /scan/{code}:
     get:
-      description: Get all projects
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Project'
-            type: array
-      summary: List Projects
-      tags:
-      - Projects
-    post:
-      consumes:
-      - application/json
-      description: Create a new project
+      description: Lookup item or container by Barcode, SKU, or ID
       parameters:
-      - description: Project Data
-        in: body
-        name: project
-        required: true
-        schema:
-          $ref: '#/definitions/models.Project'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Project'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create Project
-      tags:
-      - Projects
-  /projects/{id}:
-    delete:
-      description: Delete a project by ID
-      parameters:
-      - description: Project ID
+      - description: Barcode/SKU/UUID Code
         in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete Project
-      tags:
-      - Projects
-    get:
-      description: Get a project by ID
-      parameters:
-      - description: Project ID
-        in: path
-        name: id
+        name: code
         required: true
         type: string
       produces:
@@ -1163,44 +1514,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Project'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get Project
-      tags:
-      - Projects
-    put:
-      consumes:
-      - application/json
-      description: Update a project by ID
-      parameters:
-      - description: Project ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Project Data
-        in: body
-        name: project
-        required: true
-        schema:
-          $ref: '#/definitions/models.Project'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Project'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
+            additionalProperties: true
             type: object
         "404":
           description: Not Found
@@ -1208,9 +1522,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Update Project
+      summary: Rapid Scan Lookup
       tags:
-      - Projects
+      - Scan
   /search/items:
     get:
       description: Search across items using query parameters
@@ -1231,6 +1545,14 @@ paths:
         in: query
         name: project_id
         type: string
+      - description: Limit (default 1000, max 10000)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
