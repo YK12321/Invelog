@@ -61,6 +61,112 @@ const docTemplate = `{
                 }
             }
         },
+        "/audit/summary": {
+            "get": {
+                "description": "Get audit reconciliation summary metrics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Audit"
+                ],
+                "summary": "Get Audit Summary",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuditSummaryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Authenticate user and get JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login User",
+                "parameters": [
+                    {
+                        "description": "Login Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Register a new user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register User",
+                "parameters": [
+                    {
+                        "description": "Register Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "description": "Get all categories",
@@ -71,6 +177,20 @@ const docTemplate = `{
                     "Categories"
                 ],
                 "summary": "List Categories",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -102,7 +222,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Category"
+                            "$ref": "#/definitions/dto.CreateCategoryRequest"
                         }
                     }
                 ],
@@ -272,6 +392,20 @@ const docTemplate = `{
                     "Containers"
                 ],
                 "summary": "List Containers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -303,8 +437,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Container"
-                            "$ref": "#/definitions/invelog_pkg_dto.CreateContainerRequest"
+                            "$ref": "#/definitions/dto.CreateContainerRequest"
                         }
                     }
                 ],
@@ -390,7 +523,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Container"
+                            "$ref": "#/definitions/dto.UpdateContainerInput"
                         }
                     }
                 ],
@@ -489,7 +622,7 @@ const docTemplate = `{
         },
         "/item-types": {
             "get": {
-                "description": "Get all item types",
+                "description": "Get all item types with optional parametric filters (e.g. param.package=0805)",
                 "produces": [
                     "application/json"
                 ],
@@ -542,7 +675,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ItemType"
+                            "$ref": "#/definitions/dto.CreateItemTypeRequest"
                         }
                     }
                 ],
@@ -559,6 +692,29 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/item-types/low-stock": {
+            "get": {
+                "description": "Query component types where aggregate quantity across containers drops below configured min_quantity",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ItemTypes"
+                ],
+                "summary": "Get Low Stock ItemTypes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ItemType"
                             }
                         }
                     }
@@ -628,7 +784,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ItemType"
+                            "$ref": "#/definitions/dto.UpdateItemTypeInput"
                         }
                     }
                 ],
@@ -704,7 +860,7 @@ const docTemplate = `{
         },
         "/items": {
             "get": {
-                "description": "Get all items",
+                "description": "Get items (paginated)",
                 "produces": [
                     "application/json"
                 ],
@@ -774,6 +930,104 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": {
                                 "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/items/export": {
+            "get": {
+                "description": "Export items as CSV file filtered by location, container, or category",
+                "produces": [
+                    "text/csv"
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "summary": "Export Items as CSV",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by Origin Location ID",
+                        "name": "location_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Container ID",
+                        "name": "container_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by Category ID",
+                        "name": "category_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/items/import": {
+            "post": {
+                "description": "Import items in bulk from a CSV upload",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "summary": "Import Items via CSV",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "CSV File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/items/low-stock": {
+            "get": {
+                "description": "Query items where quantity \u003c= min_quantity",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Items"
+                ],
+                "summary": "Get Low Stock Items",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Item"
                             }
                         }
                     }
@@ -907,6 +1161,57 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/items/{id}/audit": {
+            "post": {
+                "description": "Cycle count audit reconciliation for an item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Audit"
+                ],
+                "summary": "Audit Item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Audit Data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuditItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1075,6 +1380,20 @@ const docTemplate = `{
                     "Locations"
                 ],
                 "summary": "List Locations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1106,7 +1425,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Location"
+                            "$ref": "#/definitions/dto.CreateLocationRequest"
                         }
                     }
                 ],
@@ -1192,7 +1511,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Location"
+                            "$ref": "#/definitions/dto.UpdateLocationInput"
                         }
                     }
                 ],
@@ -1266,85 +1585,21 @@ const docTemplate = `{
                 }
             }
         },
-        "/projects": {
+        "/scan/{code}": {
             "get": {
-                "description": "Get all projects",
+                "description": "Lookup item or container by Barcode, SKU, or ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Projects"
+                    "Scan"
                 ],
-                "summary": "List Projects",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Project"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Create Project",
-                "parameters": [
-                    {
-                        "description": "Project Data",
-                        "name": "project",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Project"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Project"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/projects/{id}": {
-            "get": {
-                "description": "Get a project by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Get Project",
+                "summary": "Rapid Scan Lookup",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Project ID",
-                        "name": "id",
+                        "description": "Barcode/SKU/UUID Code",
+                        "name": "code",
                         "in": "path",
                         "required": true
                     }
@@ -1353,106 +1608,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Project"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update a project by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Update Project",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Project Data",
-                        "name": "project",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Project"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Project"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a project by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Delete Project",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "additionalProperties": true
                         }
                     },
                     "404": {
@@ -1501,6 +1658,18 @@ const docTemplate = `{
                         "description": "Filter by Project ID",
                         "name": "project_id",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default 1000, max 10000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1518,8 +1687,63 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateItemRequest": {
-        "invelog_pkg_dto.CreateContainerRequest": {
+        "dto.AuditItemRequest": {
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string"
+                },
+                "physical_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AuditSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "negative_drift": {
+                    "type": "integer"
+                },
+                "net_drift": {
+                    "type": "integer"
+                },
+                "positive_drift": {
+                    "type": "integer"
+                },
+                "total_audits": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.UserResponse"
+                }
+            }
+        },
+        "dto.CreateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateContainerRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1542,9 +1766,12 @@ const docTemplate = `{
                 }
             }
         },
-        "invelog_pkg_dto.CreateItemRequest": {
+        "dto.CreateItemRequest": {
             "type": "object",
             "properties": {
+                "barcode": {
+                    "type": "string"
+                },
                 "category_id": {
                     "type": "string"
                 },
@@ -1560,6 +1787,9 @@ const docTemplate = `{
                 "item_type_id": {
                     "type": "string"
                 },
+                "min_quantity": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -1569,7 +1799,103 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
+                "reorder_quantity": {
+                    "type": "integer"
+                },
                 "serial_number": {
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateItemTypeRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "min_quantity": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "part_number": {
+                    "type": "string"
+                },
+                "reorder_quantity": {
+                    "type": "integer"
+                },
+                "specifications": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateLocationRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "description": "Optional, defaults to \"user\"",
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -1585,9 +1911,95 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateContainerInput": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "location_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateItemTypeInput": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "min_quantity": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "part_number": {
+                    "type": "string"
+                },
+                "reorder_quantity": {
+                    "type": "integer"
+                },
+                "specifications": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateLocationInput": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.UpdateItemInput": {
             "type": "object",
             "properties": {
+                "barcode": {
+                    "type": "string"
+                },
                 "category_id": {
                     "type": "string"
                 },
@@ -1603,6 +2015,9 @@ const docTemplate = `{
                 "item_type_id": {
                     "type": "string"
                 },
+                "min_quantity": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -1612,7 +2027,13 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
+                "reorder_quantity": {
+                    "type": "integer"
+                },
                 "serial_number": {
+                    "type": "string"
+                },
+                "sku": {
                     "type": "string"
                 }
             }
@@ -1665,7 +2086,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "description": "Optional: If we ever add users",
+                    "description": "Optional: Set when user performs action",
                     "type": "string"
                 }
             }
@@ -1693,6 +2114,9 @@ const docTemplate = `{
         "models.Container": {
             "type": "object",
             "properties": {
+                "barcode": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1731,6 +2155,9 @@ const docTemplate = `{
         "models.Item": {
             "type": "object",
             "properties": {
+                "barcode": {
+                    "type": "string"
+                },
                 "category": {
                     "$ref": "#/definitions/models.Category"
                 },
@@ -1770,6 +2197,9 @@ const docTemplate = `{
                 "last_check_out_time": {
                     "type": "string"
                 },
+                "min_quantity": {
+                    "type": "integer"
+                },
                 "name": {
                     "description": "Used if ItemType is not provided",
                     "type": "string"
@@ -1783,7 +2213,13 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer"
                 },
+                "reorder_quantity": {
+                    "type": "integer"
+                },
                 "serial_number": {
+                    "type": "string"
+                },
+                "sku": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -1812,11 +2248,23 @@ const docTemplate = `{
                 "manufacturer": {
                     "type": "string"
                 },
+                "min_quantity": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "part_number": {
                     "type": "string"
+                },
+                "reorder_quantity": {
+                    "type": "integer"
                 },
                 "specifications": {
                     "type": "string"
@@ -1849,6 +2297,12 @@ const docTemplate = `{
         "models.Project": {
             "type": "object",
             "properties": {
+                "allocated_cost": {
+                    "type": "number"
+                },
+                "budget": {
+                    "type": "number"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1861,11 +2315,55 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "owner": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "owner_id": {
+                    "type": "string"
+                },
+                "phase": {
+                    "description": "e.g. Concept, Definition, Design, Integration, Operations, Closeout",
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
                 "status": {
-                    "description": "e.g., \"active\", \"completed\", \"archived\"",
+                    "description": "e.g. Active, Planning, InReview, Completed, Archived",
+                    "type": "string"
+                },
+                "target_end_date": {
+                    "type": "string"
+                },
+                "trl": {
+                    "description": "Target Technology Readiness Level (1-9)",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "description": "e.g., \"admin\", \"user\"",
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
