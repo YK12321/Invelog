@@ -522,16 +522,19 @@ func (h *Handler) GetAuditSummary(c *gin.Context) {
 	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Count(&totalAudits)
 	h.DB.Model(&models.Item{}).Count(&totalItems)
 
-	var logs []models.ActivityLog
-	h.DB.Where("action = ?", "QUANTITY_ADJUSTED").Find(&logs)
-
-	for _, l := range logs {
-		if l.QuantityChange > 0 {
-			posDrift += int64(l.QuantityChange)
-		} else if l.QuantityChange < 0 {
-			negDrift += int64(l.QuantityChange)
-		}
+	type driftResult struct {
+		Pos int64
+		Neg int64
 	}
+	var res driftResult
+	// Bolt: Optimized aggregation by pushing calculation to the database
+	// This prevents fetching unbounded records into application memory and creating O(N) allocation overhead.
+	h.DB.Model(&models.ActivityLog{}).
+		Select("COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg").
+		Where("action = ?", "QUANTITY_ADJUSTED").
+		Scan(&res)
+	posDrift = res.Pos
+	negDrift = res.Neg
 
 	c.JSON(http.StatusOK, dto.AuditSummaryResponse{
 		TotalAudits:   totalAudits,

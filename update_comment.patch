@@ -1,0 +1,11 @@
+<<<<<<< SEARCH
+	var res driftResult
+	h.DB.Model(&models.ActivityLog{}).
+		Select("COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg").
+=======
+	var res driftResult
+	// Bolt: Optimized aggregation by pushing calculation to the database
+	// This prevents fetching unbounded records into application memory and creating O(N) allocation overhead.
+	h.DB.Model(&models.ActivityLog{}).
+		Select("COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg").
+>>>>>>> REPLACE
