@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"crypto/rand"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,10 +16,20 @@ import (
 	"github.com/google/uuid"
 )
 
+var ephemeralSecret []byte
+
+func init() {
+	ephemeralSecret = make([]byte, 32)
+	if _, err := rand.Read(ephemeralSecret); err != nil {
+		log.Fatalf("failed to generate fallback jwt secret: %v", err)
+	}
+}
+
 func getJWTSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		secret = "invelog-default-secret-key-change-in-prod"
+		log.Println("WARNING: JWT_SECRET environment variable is not set. Using ephemeral random secret (tokens will invalidate on restart).")
+		return ephemeralSecret
 	}
 	return []byte(secret)
 }
