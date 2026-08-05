@@ -113,7 +113,7 @@ func (h *Handler) GetContainer(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Container ID"
-// @Param container body models.Container true "Container Data"
+// @Param container body dto.UpdateContainerInput true "Container Data"
 // @Success 200 {object} models.Container
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -131,16 +131,27 @@ func (h *Handler) UpdateContainer(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&container); err != nil {
+	var input dto.UpdateContainerInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	container.ID = id // Ensure ID cannot be changed
 
-	// Prevent mass assignment of associations
-	container.Location = nil
-	container.Parent = nil
-	container.Project = nil
+	if input.Name != nil {
+		container.Name = *input.Name
+	}
+	if input.Description != nil {
+		container.Description = *input.Description
+	}
+	if input.LocationID != nil {
+		container.LocationID = input.LocationID
+	}
+	if input.ParentID != nil {
+		container.ParentID = input.ParentID
+	}
+	if input.ProjectID != nil {
+		container.ProjectID = input.ProjectID
+	}
 
 	if err := h.DB.Save(&container).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update container"})

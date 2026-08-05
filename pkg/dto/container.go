@@ -9,3 +9,11 @@ type CreateContainerRequest struct {
 	ParentID    *uuid.UUID `json:"parent_id"`
 	ProjectID   *uuid.UUID `json:"project_id"`
 }
+
+type UpdateContainerInput struct {
+	Name        *string    `json:"name"`
+	Description *string    `json:"description"`
+	LocationID  *uuid.UUID `json:"location_id"`
+	ParentID    *uuid.UUID `json:"parent_id"`
+	ProjectID   *uuid.UUID `json:"project_id"`
+}
