@@ -268,19 +268,16 @@ func (h *Handler) DeleteItemType(c *gin.Context) {
 // @Success 200 {array} models.ItemType
 // @Router /item-types/low-stock [get]
 func (h *Handler) GetLowStockItemTypes(c *gin.Context) {
-	var allTypes []models.ItemType
-	if err := h.DB.Preload("Category").Where("min_quantity > 0").Find(&allTypes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch item types"})
-		return
-	}
-
 	var lowStockTypes []models.ItemType
-	for _, it := range allTypes {
-		var totalQty int64
-		h.DB.Model(&models.Item{}).Where("item_type_id = ?", it.ID).Select("COALESCE(SUM(quantity), 0)").Scan(&totalQty)
-		if int(totalQty) <= it.MinQuantity {
-			lowStockTypes = append(lowStockTypes, it)
-		}
+
+	if err := h.DB.Preload("Category").
+		Joins("LEFT JOIN items ON items.item_type_id = item_types.id AND items.deleted_at IS NULL").
+		Where("item_types.min_quantity > 0").
+		Group("item_types.id").
+		Having("COALESCE(SUM(items.quantity), 0) <= item_types.min_quantity").
+		Find(&lowStockTypes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch low stock item types"})
+		return
 	}
 
 	c.JSON(http.StatusOK, lowStockTypes)
