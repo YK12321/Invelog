@@ -1,3 +1,6 @@
 ## 2024-06-02 - ListItems pagination performance bottleneck
 **Learning:** Returning large unbounded collections from `GORM.Find()` calls without any `Limit` constraint can cause massive performance and memory issues, especially when paired with `.Preload()`. Using limits and offsets allows for controlled data fetching.
 **Action:** Always verify that endpoint logic correctly limits query results when working with list routes. For backward compatibility, make sure to use reasonable default boundaries (e.g. `1000`) and metadata headers (e.g., `X-Total-Count`).
+## 2024-08-06 - N+1 query problem on Low Stock ItemTypes
+**Learning:** Performing a database query inside a loop (N+1 query problem) in API endpoints can severely degrade performance, particularly for unbounded collections. We observed this in `/item-types/low-stock`, where `GORM.Find()` was initially used to retrieve all item types and then iterated over to calculate the sum of items quantity per type.
+**Action:** Replace N+1 queries with single, optimized SQL queries using `Joins`, `Group`, and `Having` to compute aggregates and filters directly at the database level. Always benchmark the endpoint with a realistic volume of data to verify the performance gain.
