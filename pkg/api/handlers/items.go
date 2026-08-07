@@ -515,30 +515,29 @@ func (h *Handler) AuditItem(c *gin.Context) {
 // @Router /audit/summary [get]
 func (h *Handler) GetAuditSummary(c *gin.Context) {
 	var totalAudits int64
-	var posDrift int64
-	var negDrift int64
 	var totalItems int64
 
 	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Count(&totalAudits)
 	h.DB.Model(&models.Item{}).Count(&totalItems)
 
-	var logs []models.ActivityLog
-	h.DB.Where("action = ?", "QUANTITY_ADJUSTED").Find(&logs)
-
-	for _, l := range logs {
-		if l.QuantityChange > 0 {
-			posDrift += int64(l.QuantityChange)
-		} else if l.QuantityChange < 0 {
-			negDrift += int64(l.QuantityChange)
-		}
+	// Fetch aggregated drift values directly from the database to avoid fetching an unbounded
+	// dataset into memory with Find() and iterating over it, causing O(N) memory/processing overhead.
+	type DriftResult struct {
+		PosDrift int64
+		NegDrift int64
 	}
+	var drift DriftResult
+	h.DB.Model(&models.ActivityLog{}).
+		Select("COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos_drift, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg_drift").
+		Where("action = ?", "QUANTITY_ADJUSTED").
+		Scan(&drift)
 
 	c.JSON(http.StatusOK, dto.AuditSummaryResponse{
 		TotalAudits:   totalAudits,
 		TotalItems:    totalItems,
-		PositiveDrift: posDrift,
-		NegativeDrift: negDrift,
-		NetDrift:      posDrift + negDrift,
+		PositiveDrift: drift.PosDrift,
+		NegativeDrift: drift.NegDrift,
+		NetDrift:      drift.PosDrift + drift.NegDrift,
 	})
 }
 
