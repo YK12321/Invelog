@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,12 +15,21 @@ import (
 	"github.com/google/uuid"
 )
 
-func getJWTSecret() []byte {
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		secret = "invelog-default-secret-key-change-in-prod"
+var ephemeralJWTSecret []byte
+
+func init() {
+	ephemeralJWTSecret = make([]byte, 32)
+	if _, err := rand.Read(ephemeralJWTSecret); err != nil {
+		panic("failed to generate ephemeral JWT secret: " + err.Error())
 	}
-	return []byte(secret)
+}
+
+func getJWTSecret() []byte {
+	if secret := os.Getenv("JWT_SECRET"); secret != "" {
+		return []byte(secret)
+	}
+	// Fall back to cryptographically strong ephemeral secret if not provided
+	return ephemeralJWTSecret
 }
 
 type Claims struct {
