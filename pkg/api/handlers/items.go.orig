@@ -524,7 +524,6 @@ func (h *Handler) GetAuditSummary(c *gin.Context) {
 		PosDrift int64
 		NegDrift int64
 	}
-	// Push the drift calculation down to the database using SUM and CASE WHEN to avoid loading unbounded ActivityLog records into memory.
 	h.DB.Model(&models.ActivityLog{}).
 		Where("action = ?", "QUANTITY_ADJUSTED").
 		Select("COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos_drift, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg_drift").
