@@ -514,31 +514,32 @@ func (h *Handler) AuditItem(c *gin.Context) {
 // @Success 200 {object} dto.AuditSummaryResponse
 // @Router /audit/summary [get]
 func (h *Handler) GetAuditSummary(c *gin.Context) {
-	var totalAudits int64
-	var posDrift int64
-	var negDrift int64
 	var totalItems int64
+	if err := h.DB.Model(&models.Item{}).Count(&totalItems).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count items"})
+		return
+	}
 
-	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Count(&totalAudits)
-	h.DB.Model(&models.Item{}).Count(&totalItems)
+	var result struct {
+		TotalAudits   int64
+		PositiveDrift int64
+		NegativeDrift int64
+	}
 
-	var logs []models.ActivityLog
-	h.DB.Where("action = ?", "QUANTITY_ADJUSTED").Find(&logs)
-
-	for _, l := range logs {
-		if l.QuantityChange > 0 {
-			posDrift += int64(l.QuantityChange)
-		} else if l.QuantityChange < 0 {
-			negDrift += int64(l.QuantityChange)
-		}
+	if err := h.DB.Model(&models.ActivityLog{}).
+		Select("COUNT(*) as total_audits, COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as positive_drift, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as negative_drift").
+		Where("action = ?", "QUANTITY_ADJUSTED").
+		Scan(&result).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to compute audit summary"})
+		return
 	}
 
 	c.JSON(http.StatusOK, dto.AuditSummaryResponse{
-		TotalAudits:   totalAudits,
+		TotalAudits:   result.TotalAudits,
 		TotalItems:    totalItems,
-		PositiveDrift: posDrift,
-		NegativeDrift: negDrift,
-		NetDrift:      posDrift + negDrift,
+		PositiveDrift: result.PositiveDrift,
+		NegativeDrift: result.NegativeDrift,
+		NetDrift:      result.PositiveDrift + result.NegativeDrift,
 	})
 }
 
