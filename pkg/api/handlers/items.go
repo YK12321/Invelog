@@ -522,16 +522,17 @@ func (h *Handler) GetAuditSummary(c *gin.Context) {
 	h.DB.Model(&models.ActivityLog{}).Where("action = ?", "QUANTITY_ADJUSTED").Count(&totalAudits)
 	h.DB.Model(&models.Item{}).Count(&totalItems)
 
-	var logs []models.ActivityLog
-	h.DB.Where("action = ?", "QUANTITY_ADJUSTED").Find(&logs)
-
-	for _, l := range logs {
-		if l.QuantityChange > 0 {
-			posDrift += int64(l.QuantityChange)
-		} else if l.QuantityChange < 0 {
-			negDrift += int64(l.QuantityChange)
-		}
+	var sums struct {
+		Pos int64
+		Neg int64
 	}
+	h.DB.Model(&models.ActivityLog{}).
+		Where("action = ?", "QUANTITY_ADJUSTED").
+		Select("COALESCE(SUM(CASE WHEN quantity_change > 0 THEN quantity_change ELSE 0 END), 0) as pos, COALESCE(SUM(CASE WHEN quantity_change < 0 THEN quantity_change ELSE 0 END), 0) as neg").
+		Scan(&sums)
+
+	posDrift = sums.Pos
+	negDrift = sums.Neg
 
 	c.JSON(http.StatusOK, dto.AuditSummaryResponse{
 		TotalAudits:   totalAudits,
